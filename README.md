@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="./public/banner.png" width="100%" alt="Personal Agent Template" />
-</p>
+<img src="./public/banner.png" width="100%" alt="Personal Agent Template" />
 
 # Personal Agent Template
 
@@ -8,13 +6,9 @@
 [![License: MIT](https://img.shields.io/github/license/HugoRCD/personal-agent-template?color=black)](https://github.com/HugoRCD/personal-agent-template/blob/main/LICENSE)
 [![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel&logoColor=white)](https://vercel.com)
 
-<p align="center">
-  <b>Template.</b> Fork it, customize it, and deploy your own personal agent.
-</p>
+**Template.** Fork it, customize it, and deploy your own personal agent.
 
-<p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&project-name=personal-agent&repository-name=personal-agent"><img src="https://vercel.com/button" alt="Deploy with Vercel" /></a>
-</p>
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&project-name=personal-agent&repository-name=personal-agent)
 
 ---
 
@@ -55,7 +49,7 @@ Morning briefing skill: active focus from memory, assigned Linear issues, and a 
                                 │ /api/internal/* (Bearer auth)
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│         Nuxt 4 (UI + Nitro API + Better Auth + SQLite)           │
+│         Nuxt (UI + Nitro API + Better Auth + SQLite)           │
 └───────────────────────────────┬─────────────────────────────────┘
                                 ▼
                       Vercel Connect (Linear, Slack)
@@ -148,7 +142,7 @@ See [AGENTS.md](./AGENTS.md) for notes aimed at AI coding assistants.
 ## Built With
 
 - [Eve](https://eve.dev) — Durable agent framework
-- [Nuxt 4](https://nuxt.com) — Full-stack Vue framework
+- [Nuxt](https://nuxt.com) — Full-stack Vue framework
 - [Nuxt UI](https://ui.nuxt.com) — UI component library
 - [NuxtHub](https://hub.nuxt.com) — SQLite database
 - [Better Auth](https://www.better-auth.com) — Authentication
