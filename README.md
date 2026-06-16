@@ -20,6 +20,12 @@ pnpm db:migrate
 pnpm dev
 ```
 
+Fresh local database (single squashed migration):
+
+```bash
+rm -rf .data/db && pnpm db:migrate
+```
+
 ### Required env
 
 | Variable | Purpose |
