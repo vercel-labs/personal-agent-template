@@ -16,6 +16,13 @@ CREATE TABLE `account` (
 );
 --> statement-breakpoint
 CREATE INDEX `account_userId_idx` ON `account` (`user_id`);--> statement-breakpoint
+CREATE TABLE `phone_links` (
+	`app_user_id` text NOT NULL,
+	`phone_number` text PRIMARY KEY NOT NULL,
+	`linked_at` text DEFAULT (datetime('now')) NOT NULL
+);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `phone_links_app_user_idx` ON `phone_links` (`app_user_id`);--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`expires_at` integer NOT NULL,
@@ -50,6 +57,17 @@ CREATE TABLE `slack_links` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `slack_links_app_user_idx` ON `slack_links` (`app_user_id`);--> statement-breakpoint
+CREATE TABLE `threads` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`title` text NOT NULL,
+	`state` text,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `threads_user_updated_idx` ON `threads` (`user_id`,`updated_at`);--> statement-breakpoint
 CREATE TABLE `user` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
@@ -61,6 +79,27 @@ CREATE TABLE `user` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
+CREATE TABLE `user_memory` (
+	`id` text PRIMARY KEY NOT NULL,
+	`user_id` text NOT NULL,
+	`category` text NOT NULL,
+	`content` text NOT NULL,
+	`source` text NOT NULL,
+	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE INDEX `user_memory_user_category_idx` ON `user_memory` (`user_id`,`category`);--> statement-breakpoint
+CREATE TABLE `user_profiles` (
+	`user_id` text PRIMARY KEY NOT NULL,
+	`timezone` text DEFAULT 'UTC' NOT NULL,
+	`locale` text DEFAULT 'en' NOT NULL,
+	`bio` text DEFAULT '' NOT NULL,
+	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
+	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `verification` (
 	`id` text PRIMARY KEY NOT NULL,
 	`identifier` text NOT NULL,

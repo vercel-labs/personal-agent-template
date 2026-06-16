@@ -1,30 +1,5 @@
 import type { SlackLinkRecord } from "#shared/types/slack-link";
-
-function appOrigin() {
-  const configured = process.env.BETTER_AUTH_URL?.trim().replace(/\/$/, "");
-  if (configured) {
-    return configured;
-  }
-
-  const vercelUrl = process.env.VERCEL_URL?.trim();
-  if (vercelUrl) {
-    return `https://${vercelUrl}`;
-  }
-
-  return "http://localhost:3000";
-}
-
-function internalHeaders() {
-  const secret = process.env.INTERNAL_API_SECRET?.trim();
-  if (!secret) {
-    throw new Error("INTERNAL_API_SECRET is not configured");
-  }
-
-  return {
-    authorization: `Bearer ${secret}`,
-    "content-type": "application/json",
-  };
-}
+import { appOrigin, internalHeaders } from "./internal-api.js";
 
 export async function fetchSlackLinkForMember(teamId: string, userId: string) {
   const response = await fetch(

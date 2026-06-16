@@ -30,6 +30,11 @@ async function signOut() {
             type: 'label',
           },
           {
+            label: 'Settings',
+            icon: 'i-lucide-settings',
+            to: '/settings/profile',
+          },
+          {
             label: 'Integrations',
             icon: 'i-lucide-plug',
             to: '/settings/integrations',

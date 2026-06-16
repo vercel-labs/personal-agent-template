@@ -20,6 +20,10 @@ function createChat(prompt: string) {
   void startChat(text);
 }
 
+function summarizeDay() {
+  void startChat("Summarize my day using the daily-summary skill.");
+}
+
 function onSubmit() {
   createChat(input.value);
 }
@@ -28,18 +32,22 @@ const quickChats = [
   {
     label: "Who are you?",
     icon: "i-lucide-user-round",
+    action: () => createChat("Who are you?"),
   },
   {
     label: "What can you help me with?",
     icon: "i-lucide-message-circle-question",
+    action: () => createChat("What can you help me with?"),
   },
   {
     label: "What is the weather in Paris?",
     icon: "i-lucide-sun",
+    action: () => createChat("What is the weather in Paris?"),
   },
   {
     label: "Summarize my day",
     icon: "i-lucide-calendar-days",
+    action: summarizeDay,
   },
 ];
 </script>
@@ -74,9 +82,8 @@ const quickChats = [
             @submit="onSubmit"
           >
             <template #footer>
-              <div />
-
               <UChatPromptSubmit
+                class="ms-auto shrink-0"
                 color="neutral"
                 size="sm"
               />
@@ -93,7 +100,7 @@ const quickChats = [
               color="neutral"
               variant="outline"
               class="rounded-full"
-              @click="createChat(quickChat.label)"
+              @click="quickChat.action()"
             />
           </div>
         </UContainer>

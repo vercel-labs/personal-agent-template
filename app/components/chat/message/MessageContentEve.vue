@@ -13,6 +13,7 @@ import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import type { ChatStatus } from "~/composables/chat/types";
 import { getMergedParts } from "~/utils/chat/ai";
 import { hasVisibleParts, normalizeEveParts } from "~/utils/chat/eve";
+import { buildDisplayParts } from "~/utils/chat/save-memory";
 import type { WeatherUIToolInvocation } from "~~/shared/utils/tools/weather";
 
 const props = defineProps<{
@@ -26,10 +27,10 @@ const emit = defineEmits<{
   inputResponses: [responses: AgentInputResponse[]];
 }>();
 
-type UIPart = UIMessage["parts"][number];
-
 const rawParts = computed(() => props.message.parts);
-const parts = computed(() => getMergedParts(normalizeEveParts(rawParts.value)));
+const displayParts = computed(() =>
+  buildDisplayParts(getMergedParts(normalizeEveParts(rawParts.value))),
+);
 
 const isBusy = computed(
   () => props.status === "submitted" || props.status === "streaming",
@@ -42,95 +43,100 @@ const showThinking = computed(
     && isBusy.value
     && !hasVisibleParts(rawParts.value),
 );
-
-function isToolLikePart(part: UIPart) {
-  return isToolUIPart(part) || isDynamicToolUIPart(part);
-}
 </script>
 
 <template>
   <ChatActivityIndicator v-if="showThinking" />
 
   <template
-    v-for="(part, index) in parts"
-    :key="`${message.id}-${part.type}-${index}`"
+    v-for="(entry, index) in displayParts"
+    :key="`${message.id}-${entry.kind}-${index}`"
   >
-    <UChatReasoning
-      v-if="isReasoningUIPart(part)"
-      :text="part.text"
-      :streaming="isPartStreaming(part)"
-      chevron="leading"
-    >
-      <ChatComark
-        :markdown="part.text"
-        :streaming="isPartStreaming(part)"
-      />
-    </UChatReasoning>
+    <ChatToolSaveMemory
+      v-if="entry.kind === 'save_memory'"
+      :parts="entry.parts"
+      :can-respond="canRespond ?? true"
+      @input-responses="emit('inputResponses', $event)"
+    />
 
-    <template v-else-if="isToolLikePart(part)">
-      <ChatToolWeather
-        v-if="getToolName(part) === 'weather'"
-        :invocation="{ ...(part as WeatherUIToolInvocation) }"
-        :streaming="isToolStreaming(part)"
-      />
-      <UChatTool
-        v-else-if="getToolName(part) === 'web_search' || getToolName(part) === 'google_search'"
-        :text="isToolStreaming(part) ? 'Searching the web...' : 'Searched the web'"
-        :suffix="getSearchQuery(part)"
-        :streaming="isToolStreaming(part)"
+    <template v-else>
+      <UChatReasoning
+        v-if="isReasoningUIPart(entry.part)"
+        :text="entry.part.text"
+        :streaming="isPartStreaming(entry.part)"
         chevron="leading"
-      >
-        <ChatToolSources :sources="getSources(part)" />
-      </UChatTool>
-      <UChatTool
-        v-else
-        :text="getToolName(part)"
-        :streaming="isToolStreaming(part)"
-        chevron="leading"
-        :default-open="part.state === 'approval-requested' || part.state === 'approval-responded'"
-      >
-        <AgentInputRequest
-          v-if="isDynamicToolUIPart(part)"
-          :can-respond="canRespond ?? true"
-          :part="part as EveDynamicToolPart"
-          @input-responses="emit('inputResponses', $event)"
-        />
-
-        <pre
-          v-if="part.input"
-          class="overflow-x-auto rounded-md bg-muted p-2 text-xs"
-        >{{ JSON.stringify(part.input, null, 2) }}</pre>
-
-        <pre
-          v-if="part.output || part.errorText"
-          class="overflow-x-auto rounded-md bg-muted p-2 text-xs"
-          :class="part.errorText ? 'text-error' : ''"
-        >{{ part.errorText ?? JSON.stringify(part.output, null, 2) }}</pre>
-      </UChatTool>
-    </template>
-
-    <template v-else-if="isTextUIPart(part)">
-      <div
-        v-if="message.role === 'assistant'"
-        class="relative"
       >
         <ChatComark
-          :key="isPartStreaming(part) ? `${message.id}-text-${part.text.length}` : `${message.id}-text-${index}`"
-          :markdown="part.text"
-          :streaming="isPartStreaming(part)"
+          :markdown="entry.part.text"
+          :streaming="isPartStreaming(entry.part)"
         />
-        <span
-          v-if="isPartStreaming(part) && isLast"
-          class="ml-0.5 inline-block h-[1.1em] w-0.5 translate-y-px animate-pulse rounded-full bg-highlighted"
-          aria-hidden="true"
+      </UChatReasoning>
+
+      <template v-else-if="isToolUIPart(entry.part) || isDynamicToolUIPart(entry.part)">
+        <ChatToolWeather
+          v-if="getToolName(entry.part) === 'weather'"
+          :invocation="{ ...(entry.part as WeatherUIToolInvocation) }"
+          :streaming="isToolStreaming(entry.part)"
         />
-      </div>
-      <p
-        v-else
-        class="whitespace-pre-wrap"
-      >
-        {{ part.text }}
-      </p>
+        <UChatTool
+          v-else-if="getToolName(entry.part) === 'web_search' || getToolName(entry.part) === 'google_search'"
+          :text="isToolStreaming(entry.part) ? 'Searching the web...' : 'Searched the web'"
+          :suffix="getSearchQuery(entry.part)"
+          :streaming="isToolStreaming(entry.part)"
+          chevron="leading"
+        >
+          <ChatToolSources :sources="getSources(entry.part)" />
+        </UChatTool>
+        <UChatTool
+          v-else
+          :text="getToolName(entry.part)"
+          :streaming="isToolStreaming(entry.part)"
+          chevron="leading"
+          :default-open="entry.part.state === 'approval-requested' || entry.part.state === 'approval-responded'"
+        >
+          <AgentInputRequest
+            v-if="isDynamicToolUIPart(entry.part)"
+            :can-respond="canRespond ?? true"
+            :part="entry.part as EveDynamicToolPart"
+            @input-responses="emit('inputResponses', $event)"
+          />
+
+          <pre
+            v-if="entry.part.input"
+            class="overflow-x-auto rounded-md bg-muted p-2 text-xs"
+          >{{ JSON.stringify(entry.part.input, null, 2) }}</pre>
+
+          <pre
+            v-if="entry.part.output || entry.part.errorText"
+            class="overflow-x-auto rounded-md bg-muted p-2 text-xs"
+            :class="entry.part.errorText ? 'text-error' : ''"
+          >{{ entry.part.errorText ?? JSON.stringify(entry.part.output, null, 2) }}</pre>
+        </UChatTool>
+      </template>
+
+      <template v-else-if="isTextUIPart(entry.part)">
+        <div
+          v-if="message.role === 'assistant'"
+          class="relative"
+        >
+          <ChatComark
+            :key="isPartStreaming(entry.part) ? `${message.id}-text-${entry.part.text.length}` : `${message.id}-text-${index}`"
+            :markdown="entry.part.text"
+            :streaming="isPartStreaming(entry.part)"
+          />
+          <span
+            v-if="isPartStreaming(entry.part) && isLast"
+            class="ml-0.5 inline-block h-[1.1em] w-0.5 translate-y-px animate-pulse rounded-full bg-highlighted"
+            aria-hidden="true"
+          />
+        </div>
+        <p
+          v-else
+          class="whitespace-pre-wrap"
+        >
+          {{ entry.part.text }}
+        </p>
+      </template>
     </template>
   </template>
 </template>

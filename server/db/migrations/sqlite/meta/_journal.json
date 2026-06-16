@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1781533083101,
-      "tag": "0000_wealthy_tomorrow_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1781538359381,
-      "tag": "0001_modern_vance_astro",
+      "when": 1781602444512,
+      "tag": "0000_initial",
       "breakpoints": true
     }
   ]

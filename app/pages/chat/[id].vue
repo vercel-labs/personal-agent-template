@@ -159,6 +159,7 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
               <ChatStreamInspector :status="status" />
 
               <UChatPromptSubmit
+                class="ms-auto shrink-0"
                 :status="status"
                 color="neutral"
                 size="sm"
