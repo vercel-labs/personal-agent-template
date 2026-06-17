@@ -4,21 +4,21 @@ Thank you for your interest in contributing!
 
 ## Reporting Bugs
 
-- Search [existing issues](https://github.com/HugoRCD/personal-agent-template/issues) before opening a new one
+- Search [existing issues](https://github.com/vercel-labs/personal-agent-template/issues) before opening a new one
 - Include steps to reproduce, expected behavior, and actual behavior
 - Include your environment (Node version, OS, browser)
-- Use the [bug report template](https://github.com/HugoRCD/personal-agent-template/issues/new?template=bug-report.yml)
+- Use the [bug report template](https://github.com/vercel-labs/personal-agent-template/issues/new?template=bug-report.yml)
 
 ## Suggesting Features
 
-- Open a [feature request](https://github.com/HugoRCD/personal-agent-template/issues/new?template=feature-request.yml)
+- Open a [feature request](https://github.com/vercel-labs/personal-agent-template/issues/new?template=feature-request.yml)
 - Describe the use case and why it would be valuable for a **template** (reusable by many forks)
 - If possible, outline a proposed implementation
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/HugoRCD/personal-agent-template.git
+git clone https://github.com/vercel-labs/personal-agent-template.git
 cd personal-agent-template
 
 pnpm install

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Check [README](https://github.com/HugoRCD/personal-agent-template#readme) and [docs/](https://github.com/HugoRCD/personal-agent-template/tree/main/docs) first. For open-ended discussion, consider [GitHub Discussions](https://github.com/HugoRCD/personal-agent-template/discussions).
+        Check [README](https://github.com/vercel-labs/personal-agent-template#readme) and [docs/](https://github.com/vercel-labs/personal-agent-template/tree/main/docs) first. For open-ended discussion, consider [GitHub Discussions](https://github.com/vercel-labs/personal-agent-template/discussions).
   - type: textarea
     id: description
     attributes:
