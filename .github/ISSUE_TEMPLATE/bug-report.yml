@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Before reporting a bug, please search existing [issues](https://github.com/HugoRCD/personal-agent-template/issues). If the bug was already reported, add your reaction instead of opening a duplicate.
+        Before reporting a bug, please search existing [issues](https://github.com/vercel-labs/personal-agent-template/issues). If the bug was already reported, add your reaction instead of opening a duplicate.
   - type: textarea
     id: env
     attributes:

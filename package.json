@@ -6,10 +6,10 @@
   "author": "Hugo Richard",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HugoRCD/personal-agent-template"
+    "url": "https://github.com/vercel-labs/personal-agent-template"
   },
   "bugs": {
-    "url": "https://github.com/HugoRCD/personal-agent-template/issues"
+    "url": "https://github.com/vercel-labs/personal-agent-template/issues"
   },
   "engines": {
     "node": ">=24"
