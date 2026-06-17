@@ -2,13 +2,13 @@
 
 # Personal Agent Template
 
-[![CI](https://img.shields.io/github/actions/workflow/status/HugoRCD/personal-agent-template/ci.yml?branch=main&color=black)](https://github.com/HugoRCD/personal-agent-template/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/github/license/HugoRCD/personal-agent-template?color=black)](https://github.com/HugoRCD/personal-agent-template/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/vercel-labs/personal-agent-template/ci.yml?branch=main&color=black)](https://github.com/vercel-labs/personal-agent-template/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/vercel-labs/personal-agent-template?color=black)](https://github.com/vercel-labs/personal-agent-template/blob/main/LICENSE)
 [![Vercel](https://img.shields.io/badge/Vercel-black?logo=vercel&logoColor=white)](https://vercel.com)
 
 **Template.** Fork it, customize it, and deploy your own personal agent.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2FHugoRCD%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&project-name=personal-agent&repository-name=personal-agent)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&project-name=personal-agent&repository-name=personal-agent)
 
 ---
 
@@ -68,7 +68,7 @@ On Vercel, two services deploy from [`vercel.json`](vercel.json): `web` (Nuxt) a
 **Requirements:** Node.js 24+, pnpm
 
 ```bash
-git clone https://github.com/HugoRCD/personal-agent-template.git
+git clone https://github.com/vercel-labs/personal-agent-template.git
 cd personal-agent-template
 
 pnpm install
