@@ -16,13 +16,16 @@ importers:
         version: 0.17.3
       '@nuxt/ui':
         specifier: ^4.8.2
-        version: 4.8.2(@internationalized/date@3.12.2)(@internationalized/number@3.6.7)(@tiptap/extensions@3.26.0(@tiptap/core@3.26.0(@tiptap/pm@3.26.0))(@tiptap/pm@3.26.0))(@tiptap/y-tiptap@3.0.4(prosemirror-model@1.25.7)(prosemirror-state@1.4.4)(prosemirror-view@1.41.8)(y-protocols@1.0.7(yjs@13.6.31))(yjs@13.6.31))(db0@0.3.4(@libsql/client@0.17.3)(better-sqlite3@12.10.0)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.10.0)(kysely@0.29.2)))(embla-carousel@8.6.0)(ioredis@5.11.1)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.0)(typescript@5.9.3)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-router@5.1.0(@vue/compiler-sfc@3.5.35)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3)))(vue@3.5.35(typescript@5.9.3))(yjs@13.6.31)(zod@4.4.3)
+        version: 4.8.2(@internationalized/date@3.12.2)(@internationalized/number@3.6.7)(@tiptap/extensions@3.26.0(@tiptap/core@3.26.0(@tiptap/pm@3.26.0))(@tiptap/pm@3.26.0))(@tiptap/y-tiptap@3.0.4(prosemirror-model@1.25.7)(prosemirror-state@1.4.4)(prosemirror-view@1.41.8)(y-protocols@1.0.7(yjs@13.6.31))(yjs@13.6.31))(db0@0.3.4(@libsql/client@0.17.3)(better-sqlite3@12.10.0)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.10.0)(kysely@0.29.2)))(embla-carousel@8.6.0)(ioredis@5.11.1)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.0)(typescript@5.9.3)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))(yjs@13.6.31)(zod@4.4.3)
       '@nuxthub/core':
         specifier: ^0.10.7
         version: 0.10.7(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(db0@0.3.4(@libsql/client@0.17.3)(better-sqlite3@12.10.0)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.10.0)(kysely@0.29.2)))(ioredis@5.11.1)(magicast@0.5.3)(typescript@5.9.3)(vue-tsc@2.2.12(typescript@5.9.3))
       '@shikijs/langs':
         specifier: ^4.2.0
         version: 4.2.0
+      '@vercel/analytics':
+        specifier: ^2.0.1
+        version: 2.0.1(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nuxt@4.4.8(6lbjxz4ilid6xjewrmcm5hoiea))(react@19.2.6)(vue@3.5.35(typescript@5.9.3))
       '@vercel/connect':
         specifier: 0.2.3
         version: 0.2.3(zcqrgwgkbwcxnxm4wjbtihyve4)
@@ -2894,6 +2897,35 @@ packages:
 
   '@uploadthing/mime-types@0.3.6':
     resolution: {integrity: sha512-t3tTzgwFV9+1D7lNDYc7Lr7kBwotHaX0ZsvoCGe7xGnXKo9z0jG2Sjl/msll12FeoLj77nyhsxevXyGpQDBvLg==}
+
+  '@vercel/analytics@2.0.1':
+    resolution: {integrity: sha512-MTQG6V9qQrt1tsDeF+2Uoo5aPjqbVPys1xvnIftXSJYG2SrwXRHnqEvVoYID7BTruDz4lCd2Z7rM1BdkUehk2g==}
+    peerDependencies:
+      '@remix-run/react': ^2
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      nuxt: '>= 3'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@remix-run/react':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      nuxt:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
 
   '@vercel/cli-config@0.2.0':
     resolution: {integrity: sha512-fJRRRB7734BDuXZ89yBEaA2ncYhH7bWX30mk04W80J6VAfQc+4iB8lyzAdaGpFV3/vNlkt9VZt+/uoQoWX6UsQ==}
@@ -7815,7 +7847,7 @@ snapshots:
       rc9: 3.0.1
       std-env: 4.1.0
 
-  '@nuxt/ui@4.8.2(@internationalized/date@3.12.2)(@internationalized/number@3.6.7)(@tiptap/extensions@3.26.0(@tiptap/core@3.26.0(@tiptap/pm@3.26.0))(@tiptap/pm@3.26.0))(@tiptap/y-tiptap@3.0.4(prosemirror-model@1.25.7)(prosemirror-state@1.4.4)(prosemirror-view@1.41.8)(y-protocols@1.0.7(yjs@13.6.31))(yjs@13.6.31))(db0@0.3.4(@libsql/client@0.17.3)(better-sqlite3@12.10.0)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.10.0)(kysely@0.29.2)))(embla-carousel@8.6.0)(ioredis@5.11.1)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.0)(typescript@5.9.3)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-router@5.1.0(@vue/compiler-sfc@3.5.35)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3)))(vue@3.5.35(typescript@5.9.3))(yjs@13.6.31)(zod@4.4.3)':
+  '@nuxt/ui@4.8.2(@internationalized/date@3.12.2)(@internationalized/number@3.6.7)(@tiptap/extensions@3.26.0(@tiptap/core@3.26.0(@tiptap/pm@3.26.0))(@tiptap/pm@3.26.0))(@tiptap/y-tiptap@3.0.4(prosemirror-model@1.25.7)(prosemirror-state@1.4.4)(prosemirror-view@1.41.8)(y-protocols@1.0.7(yjs@13.6.31))(yjs@13.6.31))(db0@0.3.4(@libsql/client@0.17.3)(better-sqlite3@12.10.0)(drizzle-orm@0.45.2(@cloudflare/workers-types@4.20260613.1)(@libsql/client@0.17.3)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.10.0)(kysely@0.29.2)))(embla-carousel@8.6.0)(ioredis@5.11.1)(magicast@0.5.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(tailwindcss@4.3.0)(typescript@5.9.3)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))(yjs@13.6.31)(zod@4.4.3)':
     dependencies:
       '@floating-ui/dom': 1.7.6
       '@iconify/vue': 5.0.1(vue@3.5.35(typescript@5.9.3))
@@ -7884,7 +7916,6 @@ snapshots:
     optionalDependencies:
       '@internationalized/date': 3.12.2
       '@internationalized/number': 3.6.7
-      vue-router: 5.1.0(@vue/compiler-sfc@3.5.35)(vite@7.3.5(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.35(typescript@5.9.3))
       zod: 4.4.3
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -9069,6 +9100,13 @@ snapshots:
       vue: 3.5.35(typescript@5.9.3)
 
   '@uploadthing/mime-types@0.3.6': {}
+
+  '@vercel/analytics@2.0.1(next@16.2.6(@babel/core@7.29.7)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(nuxt@4.4.8(6lbjxz4ilid6xjewrmcm5hoiea))(react@19.2.6)(vue@3.5.35(typescript@5.9.3))':
+    optionalDependencies:
+      next: 16.2.6(@babel/core@7.29.7)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      nuxt: 4.4.8(6lbjxz4ilid6xjewrmcm5hoiea)
+      react: 19.2.6
+      vue: 3.5.35(typescript@5.9.3)
 
   '@vercel/cli-config@0.2.0':
     dependencies:

@@ -2,7 +2,7 @@ const privateNoStore = { "cache-control": "private, no-store" } as const;
 const noStore = { "cache-control": "no-store" } as const;
 
 export default defineNuxtConfig({
-  modules: ["@nuxt/ui", "@comark/nuxt", "eve/nuxt", "@nuxthub/core"],
+  modules: ["@nuxt/ui", "@comark/nuxt", "eve/nuxt", "@nuxthub/core", "@vercel/analytics"],
   css: ["~/assets/css/main.css"],
   devtools: { enabled: true },
   compatibilityDate: "latest",
