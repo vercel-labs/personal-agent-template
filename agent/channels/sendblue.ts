@@ -47,15 +47,28 @@ async function postToThread(threadId: string, message: string) {
   try {
     const sendblue = getSendblueAdapter();
     await sendblue.postMessage(threadId, { markdown: message });
-  } catch {
-    // Outbound can fail on the free plan (unverified contact) — don't fail the webhook.
+  } catch (error) {
+    console.error("[sendblue] outbound delivery failed", error);
   }
+}
+
+function threadIdForState(
+  sendblue: ReturnType<typeof getSendblueAdapter>,
+  state: Pick<SendblueChannelState, "threadId" | "fromNumber" | "contactNumber">,
+) {
+  if (state.fromNumber && state.contactNumber) {
+    return sendblue.encodeThreadId({
+      fromNumber: state.fromNumber,
+      contactNumber: state.contactNumber,
+    });
+  }
+
+  return state.threadId;
 }
 
 async function dispatchInbound(
   payload: SendblueMessagePayload,
   send: SendFn<SendblueChannelState>,
-  waitUntil: (task: Promise<unknown>) => void,
 ) {
   const sendblue = getSendblueAdapter();
   const threadId = threadIdFromPayload(payload, sendblue);
@@ -86,8 +99,8 @@ async function dispatchInbound(
 
   const fromNumber = resolveSendblueLineNumber(payload);
 
-  waitUntil(
-    send(
+  try {
+    await send(
       { message: text },
       {
         auth,
@@ -101,8 +114,10 @@ async function dispatchInbound(
           pendingToolCallMessage: null,
         } satisfies SendblueChannelState,
       },
-    ).catch(() => undefined),
-  );
+    );
+  } catch (error) {
+    console.error("[sendblue] agent send failed", error);
+  }
 }
 
 export default defineChannel<SendblueChannelState>({
@@ -180,14 +195,14 @@ export default defineChannel<SendblueChannelState>({
         return new Response("OK", { status: 200 });
       }
 
-      waitUntil(dispatchInbound(payload, send, waitUntil));
+      waitUntil(dispatchInbound(payload, send));
       return new Response("OK", { status: 200 });
     }),
   ],
 
   events: {
     async "turn.started"(_event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId || channel.state.isGroup) {
         return;
       }
@@ -196,7 +211,7 @@ export default defineChannel<SendblueChannelState>({
     },
 
     async "actions.requested"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId || channel.state.isGroup) {
         return;
       }
@@ -214,7 +229,7 @@ export default defineChannel<SendblueChannelState>({
     },
 
     async "message.completed"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId) {
         return;
       }
@@ -232,27 +247,28 @@ export default defineChannel<SendblueChannelState>({
         return;
       }
 
-      await channel.sendblue.postMessage(threadId, { markdown: event.message });
+      await postToThread(threadId, event.message);
     },
 
     async "input.requested"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId || event.requests.length === 0) {
         return;
       }
 
       const prompts = event.requests.map((request) => request.prompt).join("\n\n");
-      await channel.sendblue.postMessage(threadId, {
-        markdown: [
+      await postToThread(
+        threadId,
+        [
           prompts,
           "",
           `Open ${chatUrl()} in your browser to approve or deny this action.`,
         ].join("\n"),
-      });
+      );
     },
 
     async "authorization.required"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId) {
         return;
       }
@@ -269,41 +285,41 @@ export default defineChannel<SendblueChannelState>({
             `Open ${chatUrl()} or ${profileSettingsUrl()} to continue.`,
           ];
 
-      await channel.sendblue.postMessage(threadId, {
-        markdown: lines.join("\n"),
-      });
+      await postToThread(threadId, lines.join("\n"));
     },
 
     async "turn.failed"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId) {
         return;
       }
 
-      await channel.sendblue.postMessage(threadId, {
-        markdown: [
+      await postToThread(
+        threadId,
+        [
           "I hit an error while handling your request.",
           "",
           "Please try again, rephrase, or open the web chat if it keeps failing.",
         ].join("\n"),
-      });
+      );
 
       void event;
     },
 
     async "session.failed"(event, channel) {
-      const threadId = channel.state.threadId;
+      const threadId = threadIdForState(channel.sendblue, channel.state);
       if (!threadId) {
         return;
       }
 
-      await channel.sendblue.postMessage(threadId, {
-        markdown: [
+      await postToThread(
+        threadId,
+        [
           "This session could not recover from an error.",
           "",
           "Send a new message to start again.",
         ].join("\n"),
-      });
+      );
 
       void event;
     },
