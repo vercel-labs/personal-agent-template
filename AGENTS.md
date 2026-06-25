@@ -1,6 +1,6 @@
 # Personal Agent Template
 
-Durable personal AI assistant built with Eve and Nuxt 4.
+Durable personal AI assistant built with Eve and Nuxt.
 
 ## Quick Reference
 
