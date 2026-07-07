@@ -16,7 +16,30 @@ cp .env.example .env
 | `BETTER_AUTH_URL` | `http://localhost:3000` locally, or your production URL |
 | `INTERNAL_API_SECRET` | Run `openssl rand -base64 32` (must match on web + eve services) |
 
-These three variables are enough for local development. On Vercel, set them on **both** the `web` and `eve` services.
+These three variables are enough for local development. On Vercel, set them on **both** the `web` and `eve` services — and add a database (see below).
+
+## Database
+
+### `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` (required on Vercel)
+
+Locally, NuxtHub (`hub.db: "sqlite"`) uses a SQLite file at `.data/db/sqlite.db`, so no configuration is needed. On Vercel (or any serverless host) that local file cannot be created — without a hosted database every request fails with:
+
+```
+Error: ConnectionFailed("Unable to open connection to local database .../.data/db/sqlite.db: 14")
+```
+
+Provision a [Turso database from the Vercel Marketplace](https://vercel.com/marketplace/tursocloud) — the Deploy button in the README includes it automatically, or add it to an existing project:
+
+```bash
+vercel integration add turso
+```
+
+This sets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the project. NuxtHub detects them at **build time** and switches from the local file to the remote libSQL database, so redeploy after adding them. Then apply the schema:
+
+```bash
+vercel env pull .env --yes
+pnpm db:migrate
+```
 
 ### `NUXT_PUBLIC_SITE_URL` (optional)
 
