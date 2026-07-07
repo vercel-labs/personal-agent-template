@@ -16,7 +16,7 @@ export default defineTool({
     reason: z.string().min(1).describe("Brief explanation of why these updates are worth remembering"),
     updates: z.array(updateSchema).min(1).max(5).describe("Category updates to save together"),
   }),
-  needsApproval: always(),
+  approval: always(),
   async execute({ updates }, ctx) {
     const userId = ctx.session.auth.current?.principalId;
     if (!userId) {

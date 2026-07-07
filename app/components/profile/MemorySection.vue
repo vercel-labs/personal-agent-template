@@ -133,7 +133,7 @@ async function handleSaveEdit() {
           variant="ghost"
           size="xs"
           icon="i-lucide-download"
-          @click="importOpen = true"
+          @click="() => { importOpen = true }"
         >
           Import
         </UButton>
@@ -169,7 +169,7 @@ async function handleSaveEdit() {
           variant="soft"
           size="sm"
           icon="i-lucide-download"
-          @click="importOpen = true"
+          @click="() => { importOpen = true }"
         >
           Import Memory
         </UButton>

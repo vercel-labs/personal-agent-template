@@ -43,11 +43,19 @@ function isMissingGrantError(error: unknown) {
     || error instanceof NoValidTokenError;
 }
 
+function connectCreateCommand(def: ConnectorDef) {
+  if (def.id === "github") {
+    return "vercel connect create github --name personal-agent";
+  }
+
+  return "vercel connect create mcp.linear.app --name linear";
+}
+
 function formatSetupHint(def: ConnectorDef, reason: "missing" | "not_linked") {
   if (reason === "missing") {
     return [
       "Create the connector, then attach it to this project:",
-      "vercel connect create mcp.linear.app --name linear",
+      connectCreateCommand(def),
       `vercel connect attach ${def.connector}`,
       "Update the connector UID in server/connectors.ts if it differs from `vercel connect list`.",
     ].join("\n");

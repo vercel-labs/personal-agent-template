@@ -122,7 +122,7 @@ defineShortcuts({
       <UButton
         color="neutral"
         variant="ghost"
-        @click="open = false"
+        @click="() => { open = false }"
       >
         Cancel
       </UButton>

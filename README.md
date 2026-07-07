@@ -10,7 +10,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&project-name=personal-agent&repository-name=personal-agent)
 
-Open source personal agent template. Web chat, Slack, iMessage, Linear, and long-term memory — one codebase, durable sessions, user-approved memory saves.
+Open source personal agent template. Web chat, Slack, iMessage, GitHub, Linear, and long-term memory — one codebase, durable sessions, user-approved memory saves.
 
 ## Features
 
@@ -25,6 +25,10 @@ DMs and @mentions on Slack. Link your Slack account to your web profile so memor
 ### iMessage — Text Your Agent
 
 Reach V over iMessage via [Sendblue](https://chat-sdk.dev/adapters/vendor-official/sendblue). Add your phone number in **Profile**, then message the Sendblue line — same memory and context as web and Slack.
+
+### GitHub — Repos, PRs, and CI
+
+Connect GitHub via Vercel Connect. Ask about repositories, pull requests, issues, and workflows — the agent uses [@github-tools/sdk](https://github-tools.com/frameworks/eve) tools with durable approval on writes.
 
 ### Linear — Issues On Demand
 

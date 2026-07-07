@@ -119,7 +119,7 @@ async function confirmDelete() {
           color="neutral"
           variant="outline"
           label="Cancel"
-          @click="confirmOpen = false"
+          @click="() => { confirmOpen = false }"
         />
         <UButton
           color="error"

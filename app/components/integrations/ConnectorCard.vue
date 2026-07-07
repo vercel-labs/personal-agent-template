@@ -25,6 +25,7 @@ const {
   testResults,
   actionError,
   parsedResults,
+  resultsHeading,
   connect,
   test,
   revoke,
@@ -112,7 +113,7 @@ const statusDotClass = computed(() => {
             size="xs"
             icon="i-lucide-unplug"
             aria-label="Disconnect"
-            @click="showRevokeModal = true"
+            @click="() => { showRevokeModal = true }"
           />
         </template>
       </div>
@@ -158,7 +159,7 @@ const statusDotClass = computed(() => {
       <div class="overflow-hidden rounded-md border border-default">
         <div class="flex items-center justify-between border-b border-default px-2.5 py-1.5">
           <p class="text-[10px] font-medium tracking-wide text-dimmed uppercase">
-            {{ parsedResults.length }} issues
+            {{ parsedResults.length }} {{ resultsHeading.toLowerCase() }}
           </p>
           <UButton
             color="neutral"
@@ -198,7 +199,7 @@ const statusDotClass = computed(() => {
         <UButton
           color="neutral"
           variant="ghost"
-          @click="showRevokeModal = false"
+          @click="() => { showRevokeModal = false }"
         >
           Cancel
         </UButton>
