@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev",
+    "dev": "node scripts/ensure-eve-dev.mjs && nuxt dev",
     "start": "nuxt preview",
     "typecheck": "nuxt typecheck",
     "db:generate": "nuxt db generate",
@@ -54,6 +54,7 @@
     "@iconify-json/lucide": "^1.2.116",
     "@iconify-json/simple-icons": "^1.2.89",
     "@types/node": "26.1.0",
+    "microsandbox": "^0.6.5",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.6"
   }

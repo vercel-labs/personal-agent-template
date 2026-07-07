@@ -95,20 +95,14 @@ On Vercel, Eve handles provider configuration through the platform. For local de
 Integrations use [Vercel Connect](https://vercel.com/docs/connect) — no extra env vars in this repo for Linear or GitHub OAuth, but you must:
 
 1. Create Connect resources (GitHub, Linear MCP, Slack) in your Vercel team
-2. Update connector UIDs in [`server/connectors.ts`](../server/connectors.ts) and [`agent/lib/github-auth.ts`](../agent/lib/github-auth.ts) (GitHub) or [`agent/channels/slack.ts`](../agent/channels/slack.ts) (Slack, default: `slack/v`)
+2. Update connector UIDs in [`shared/connect.ts`](../shared/connect.ts) (GitHub) or [`agent/channels/slack.ts`](../agent/channels/slack.ts) (Slack, default: `slack/v`)
 3. Connect clients in **Settings → Integrations** in the app
 
 See [Customization](./CUSTOMIZATION.md#integrations) for setup steps.
 
 ## GitHub (optional)
 
-GitHub tools use per-user OAuth via Vercel Connect in production. For local development without Connect, set a personal access token on the **eve** service:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `GITHUB_TOKEN` | No | GitHub PAT with `repo` scope — fallback when Vercel Connect is not configured |
-
-If both Connect and `GITHUB_TOKEN` are set, `GITHUB_TOKEN` takes precedence at session start.
+GitHub tools use per-user OAuth via Vercel Connect. Connect in **Settings → Integrations**, then start a new chat session so GitHub tools load at `session.started`.
 
 ## Local-only files
 

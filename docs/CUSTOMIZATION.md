@@ -91,7 +91,7 @@ Skills are markdown files in [`agent/skills/`](../agent/skills/). See [`daily-su
 
 ### GitHub
 
-Uses Vercel Connect OAuth (`github/personal-agent`) and [@github-tools/sdk/eve](https://github-tools.com/frameworks/eve). Tool logic: [`agent/tools/github.ts`](../agent/tools/github.ts), auth: [`agent/lib/github-auth.ts`](../agent/lib/github-auth.ts).
+Uses Vercel Connect OAuth and [@github-tools/sdk/eve](https://github-tools.com/frameworks/eve). Connector UID: [`shared/connect.ts`](../shared/connect.ts) (`GITHUB_CONNECTOR`), registry: [`server/connectors.ts`](../server/connectors.ts), tools: [`agent/tools/github.ts`](../agent/tools/github.ts).
 
 1. Create a GitHub connector in Vercel Connect:
 
@@ -100,11 +100,9 @@ Uses Vercel Connect OAuth (`github/personal-agent`) and [@github-tools/sdk/eve](
    vercel connect attach github/personal-agent
    ```
 
-2. Update the connector UID in [`server/connectors.ts`](../server/connectors.ts) and [`agent/lib/github-auth.ts`](../agent/lib/github-auth.ts) if it differs from `vercel connect list`
+2. Update `GITHUB_CONNECTOR` in [`shared/connect.ts`](../shared/connect.ts) if it differs from `vercel connect list`
 3. Open **Settings → Integrations** and connect
 4. Ask about repos, PRs, or issues in chat
-
-For local development without Vercel Connect, set `GITHUB_TOKEN` on the **eve** service (see [Environment](./ENVIRONMENT.md#github-optional)).
 
 ### Linear
 

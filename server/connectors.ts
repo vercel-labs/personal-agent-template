@@ -1,4 +1,5 @@
 import type { ConnectorDef } from "#shared/types/connector";
+import { GITHUB_CONNECTOR } from "#shared/connect";
 import {
   fetchLinearIssuesViaGraphql,
   fetchLinearIssuesViaMcp,
@@ -9,7 +10,7 @@ export const connectors: ConnectorDef[] = [
     id: "github",
     name: "GitHub",
     description: "Repositories, issues, pull requests, and CI workflows.",
-    connector: "github/personal-agent",
+    connector: GITHUB_CONNECTOR,
     connectionName: "github",
     icon: "i-simple-icons-github",
     scopes: ["repo"],

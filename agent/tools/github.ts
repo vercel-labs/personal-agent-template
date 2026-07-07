@@ -1,24 +1,34 @@
 import { buildEveToolMap } from "@github-tools/sdk/eve";
+import { getToken, UserAuthorizationRequiredError } from "@vercel/connect";
 import { defineDynamic } from "eve/tools";
-import { githubAuth } from "../lib/github-auth.ts";
+import { CONNECT_USER_ISSUER, GITHUB_CONNECTOR } from "../../shared/connect.js";
 
 export default defineDynamic({
   events: {
     "session.started": async (_event, ctx) => {
-      const token = process.env.GITHUB_TOKEN
-        ?? (await ctx.getToken(githubAuth, { authKey: "github" })).token;
+      const auth = ctx.session.auth.current;
+      const userId = auth?.principalId;
+      if (!userId || userId.startsWith("eve:")) {
+        return {};
+      }
 
-      return buildEveToolMap({
-        preset: "maintainer",
-        token,
-        requireApproval: {
-          mergePullRequest: true,
-          createOrUpdateFile: true,
-          closeIssue: true,
-          createIssue: "once",
-          addPullRequestComment: false,
-        },
-      });
+      try {
+        const token = await getToken(GITHUB_CONNECTOR, {
+          subject: {
+            type: "user",
+            id: userId,
+            issuer: auth.issuer ?? auth.authenticator ?? CONNECT_USER_ISSUER,
+          },
+          scopes: ["repo"],
+        });
+        return buildEveToolMap({ preset: "maintainer", token });
+      }
+      catch (error) {
+        if (error instanceof UserAuthorizationRequiredError) {
+          return {};
+        }
+        throw error;
+      }
     },
   },
 });
