@@ -57,6 +57,14 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  fonts: {
+    families: [
+      { name: 'Geist', weights: ['100 900'], global: true },
+      { name: 'Geist Mono', weights: ['100 900'], global: true },
+    ],
+  },
+
   hub: {
     db: "sqlite",
   },

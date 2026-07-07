@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "nuxt build",
-    "dev": "node scripts/ensure-eve-dev.mjs && nuxt dev",
+    "dev": "nuxt dev",
     "start": "nuxt preview",
     "typecheck": "nuxt typecheck",
     "db:generate": "nuxt db generate",

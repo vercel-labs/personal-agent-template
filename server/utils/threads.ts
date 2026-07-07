@@ -113,6 +113,7 @@ export async function updateThreadForUser(
 
   await db.update(schema.threads)
     .set({
+      updatedAt: new Date(),
       ...(patch.title !== undefined ? { title: truncateThreadTitle(patch.title) } : {}),
       ...(patch.state !== undefined
         ? { state: serializeThreadState(mergeThreadState(existing.state, patch.state)) }

@@ -136,7 +136,7 @@ V can also propose facts via **`save_memory`** — approve or skip in chat. Edit
 ## Development
 
 ```bash
-pnpm dev          # Start Nuxt + Eve dev server
+pnpm dev          # Nuxt + Eve (eve/nuxt module — see Eve docs)
 pnpm typecheck    # TypeScript check
 pnpm build        # Production build
 pnpm db:generate  # Generate Drizzle migrations

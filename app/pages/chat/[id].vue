@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ThreadRecord } from "#shared/types/thread";
 import { resumeOptionsFromThread } from "~/composables/chat/providers/eve/thread-state";
-import { useChatNavigation } from "~/composables/chat/navigation";
+import { useChatNavigation, refreshThreadList } from "~/composables/chat/navigation";
 import { useAuthorizationChallenges } from "~/composables/chat/useAuthorizationChallenges";
 import { useStreamLog } from "~/composables/chat/providers/eve/stream-log";
 import { useChatSession } from "~/composables/chat/useChatSession";
@@ -53,6 +53,7 @@ watch(status, (value) => {
 });
 
 onMounted(() => {
+  void refreshThreadList();
   void tryResumeConnectedChallenges({ skipIfBusy: isBusy.value });
 
   if (import.meta.client) {

@@ -1,6 +1,7 @@
 import type { EveMessageData, UseEveAgentSnapshot } from "eve/vue";
 import type { ThreadRecord, ThreadState } from "#shared/types/thread";
 import type { ChatSessionOptions, EveStreamEvent } from "~/composables/chat/types";
+import { refreshThreadList } from "~/composables/chat/navigation";
 
 export function resumeOptionsFromThread(thread: ThreadRecord): ChatSessionOptions {
   const events = thread.state?.events;
@@ -40,4 +41,6 @@ export async function persistThreadState(
     method: "PATCH",
     body: { state },
   });
+
+  void refreshThreadList();
 }

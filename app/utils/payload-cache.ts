@@ -11,3 +11,9 @@ export function getCachedPayloadData<T>(key: string, nuxtApp?: NuxtApp): T | und
 export const payloadCacheOptions = {
   getCachedData: getCachedPayloadData,
 } as const;
+
+export function clearCachedPayloadData(key: string, nuxtApp?: NuxtApp) {
+  const app = nuxtApp ?? useNuxtApp();
+  delete app.payload.data[key];
+  delete app.static.data[key];
+}

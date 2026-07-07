@@ -12,7 +12,7 @@ import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import type { ChatStatus } from "~/composables/chat/types";
 import { getMergedParts } from "~/utils/chat/ai";
-import { hasVisibleParts, normalizeEveParts } from "~/utils/chat/eve";
+import { hasVisibleParts, getToolDisplayName, normalizeEveParts, shouldShowToolInput } from "~/utils/chat/eve";
 import { buildDisplayParts } from "~/utils/chat/save-memory";
 import type { WeatherUIToolInvocation } from "~~/shared/utils/tools/weather";
 
@@ -88,8 +88,8 @@ const showThinking = computed(
           <ChatToolSources :sources="getSources(entry.part)" />
         </UChatTool>
         <UChatTool
-          v-else
-          :text="getToolName(entry.part)"
+          v-else-if="getToolName(entry.part) !== 'ask_question'"
+          :text="isDynamicToolUIPart(entry.part) ? getToolDisplayName(entry.part as EveDynamicToolPart) : getToolName(entry.part)"
           :streaming="isToolStreaming(entry.part)"
           chevron="leading"
           :default-open="entry.part.state === 'approval-requested' || entry.part.state === 'approval-responded'"
@@ -102,7 +102,7 @@ const showThinking = computed(
           />
 
           <pre
-            v-if="entry.part.input"
+            v-if="entry.part.input && (!isDynamicToolUIPart(entry.part) || shouldShowToolInput(entry.part as EveDynamicToolPart))"
             class="overflow-x-auto rounded-md bg-muted p-2 text-xs"
           >{{ JSON.stringify(entry.part.input, null, 2) }}</pre>
 
@@ -112,6 +112,14 @@ const showThinking = computed(
             :class="entry.part.errorText ? 'text-error' : ''"
           >{{ entry.part.errorText ?? JSON.stringify(entry.part.output, null, 2) }}</pre>
         </UChatTool>
+
+        <AgentInputRequest
+          v-else-if="isDynamicToolUIPart(entry.part)"
+          compact
+          :can-respond="canRespond ?? true"
+          :part="entry.part as EveDynamicToolPart"
+          @input-responses="emit('inputResponses', $event)"
+        />
       </template>
 
       <template v-else-if="isTextUIPart(entry.part)">

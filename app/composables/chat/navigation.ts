@@ -1,8 +1,10 @@
 import type { MaybeRefOrGetter } from "vue";
 import { nextTick, toValue } from "vue";
+import type { ThreadRecord, ThreadSummary } from "#shared/types/thread";
 import { resetAllEveAgents, removeEveAgent } from "~/composables/chat/providers/eve/init";
 import { resetStreamLog } from "~/composables/chat/providers/eve/stream-log";
 import { truncateThreadTitle } from "#shared/types/thread";
+import { clearCachedPayloadData } from "~/utils/payload-cache";
 
 type PendingMessage = {
   chatId: string;
@@ -37,7 +39,25 @@ async function navigateWithChatPromptTransition(to: string) {
 
 export const THREAD_LIST_KEY = "thread-list";
 
+interface ThreadListResponse {
+  threads: ThreadSummary[];
+}
+
+function upsertThreadInListCache(thread: ThreadSummary) {
+  if (!import.meta.client) {
+    return;
+  }
+
+  const nuxtApp = useNuxtApp();
+  const cached = nuxtApp.payload.data[THREAD_LIST_KEY] as ThreadListResponse | undefined;
+  const threads = cached?.threads ?? [];
+  nuxtApp.payload.data[THREAD_LIST_KEY] = {
+    threads: [thread, ...threads.filter(entry => entry.id !== thread.id)],
+  };
+}
+
 export async function refreshThreadList() {
+  clearCachedPayloadData(THREAD_LIST_KEY);
   await refreshNuxtData(THREAD_LIST_KEY);
 }
 
@@ -45,7 +65,7 @@ export async function startChat(message: string, chatId = crypto.randomUUID()) {
   const text = message.trim();
   if (!text) return;
 
-  await $fetch("/api/threads", {
+  const { thread } = await $fetch<{ thread: ThreadRecord }>("/api/threads", {
     method: "POST",
     body: {
       id: chatId,
@@ -53,6 +73,7 @@ export async function startChat(message: string, chatId = crypto.randomUUID()) {
     },
   });
 
+  upsertThreadInListCache(thread);
   pendingMessage = { chatId, text };
   await refreshThreadList();
   await navigateWithChatPromptTransition(`/chat/${chatId}`);

@@ -143,12 +143,3 @@ Reset the local database:
 ```bash
 rm -rf .data/db && pnpm db:migrate
 ```
-
-### Eve dev timeout
-
-If `pnpm dev` fails with `Timed out waiting for Eve to print its server URL`, clear stale Eve artifacts and retry:
-
-```bash
-rm -rf .eve node_modules/.cache/eve
-pnpm dev
-```
