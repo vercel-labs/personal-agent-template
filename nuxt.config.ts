@@ -26,6 +26,7 @@ export default defineNuxtConfig({
     "/api/connectors": { headers: privateNoStore },
     "/api/slack/**": { headers: privateNoStore },
     "/api/integrations/**": { headers: privateNoStore },
+    "/eve/v1/**": { headers: noStore },
     "/_eve_internal/**": { headers: noStore },
   },
   nitro: {

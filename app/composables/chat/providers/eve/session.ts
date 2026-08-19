@@ -44,15 +44,15 @@ export function createEveChatSession(
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
-    await agent.value.send({ message: trimmed });
+    await agent.value.send(trimmed);
   }
 
   async function sendInputResponses(responses: AgentInputResponse[]) {
-    await agent.value.send({ inputResponses: responses });
+    await agent.value.respond(responses);
   }
 
   function stop() {
-    agent.value.stop();
+    void agent.value.cancel();
   }
 
   function reset() {
@@ -65,7 +65,7 @@ export function createEveChatSession(
     const text = lastUserMessageText(agent.value.data.value);
     if (!text) return;
 
-    await agent.value.send({ message: text });
+    await agent.value.send(text);
   }
 
   return {
