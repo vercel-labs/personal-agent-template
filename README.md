@@ -61,7 +61,7 @@ Morning briefing skill: active focus from memory, assigned Linear issues, and a 
                       Vercel Connect (Linear, Slack)
 ```
 
-On Vercel, two services deploy from [`vercel.json`](vercel.json): `web` (Nuxt) and `eve` (agent runtime).
+On Vercel, the Nuxt app and Eve agent deploy as one project. The `eve/nuxt` module adds the Eve service and `/eve/v1` routing at build time — no `vercel.json` required.
 
 ## Quick Start
 

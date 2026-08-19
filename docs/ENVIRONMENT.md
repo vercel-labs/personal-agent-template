@@ -97,7 +97,7 @@ Setup:
 2. Set the env vars above on the **eve** Vercel service.
 3. Configure the Sendblue **receive webhook** to:
 
-   `https://<your-domain>/_eve_internal/eve/eve/v1/sendblue/webhook`
+   `https://<your-domain>/eve/v1/sendblue/webhook`
 
 4. Users add their personal phone number (E.164) in **Settings → Profile** before messaging the Sendblue number.
 

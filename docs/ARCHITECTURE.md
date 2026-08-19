@@ -42,9 +42,9 @@ flowchart TB
 | Vercel service | Entry | Role |
 |----------------|-------|------|
 | `web` | `/` | Nuxt UI + Nitro API |
-| `eve` | `/_eve_internal/eve` | Eve agent runtime |
+| `eve` | `/eve/v1` | Eve agent runtime |
 
-Configured in [`vercel.json`](../vercel.json).
+The `eve/nuxt` module generates the Eve Vercel service and `/eve/v1` routing at build time. No `vercel.json` is required.
 
 ## Project structure
 
