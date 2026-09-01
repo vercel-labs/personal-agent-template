@@ -2,7 +2,6 @@
 import { authClient } from "~/lib/auth-client";
 
 const { profile, pending, saveProfile, timezones, locales } = useProfile();
-const { memory, pending: memoryPending } = useMemory();
 
 const form = reactive({
   name: "",
@@ -83,7 +82,7 @@ function resetForm() {
             Settings
           </h1>
           <p class="max-w-lg text-sm text-muted">
-            Manage your identity, memory, and integrations.
+            Manage your identity and integrations.
           </p>
         </header>
 
@@ -193,12 +192,6 @@ function resetForm() {
             </SettingsRow>
           </SettingsSection>
         </form>
-
-        <ProfileMemorySection
-          class="mt-8"
-          :memory="memory"
-          :pending="memoryPending"
-        />
       </div>
     </template>
 

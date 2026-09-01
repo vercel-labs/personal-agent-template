@@ -49,18 +49,16 @@ agent/lib/*-internal.ts  →  /api/internal/*  →  server/utils/*
 
 Authenticated with `Authorization: Bearer <INTERNAL_API_SECRET>`. See [`server/utils/internal-api.ts`](server/utils/internal-api.ts).
 
-## Memory Flow
+## Memory
 
-1. **Session injection** — [`agent/instructions.ts`](agent/instructions.ts) on `session.started`
-2. **Agent save** — [`agent/tools/save_memory.ts`](agent/tools/save_memory.ts) with web approval UI
-3. **Profile UI** — import, view, edit, delete on Settings → Profile
-
-Categories: [`shared/types/memory.ts`](shared/types/memory.ts). One prose block per category; saves replace the full block.
+Eve's `fileMemory()` provider, bound in [`agent/memory/profile.ts`](agent/memory/profile.ts)
+and scoped per principal. Documents live in private Vercel Blob storage; the
+agent maintains them with `profile__save_memory` and `profile__remove_memory`.
 
 ## Customization Checklist
 
 - [`shared/agent.ts`](shared/agent.ts) — branding
-- [`agent/lib/base-instructions.ts`](agent/lib/base-instructions.ts) — persona
+- [`agent/instructions.ts`](agent/instructions.ts) — persona
 - [`agent/channels/slack.ts`](agent/channels/slack.ts) — Slack Connect slug
 - [`agent/agent.ts`](agent/agent.ts) — AI model
 

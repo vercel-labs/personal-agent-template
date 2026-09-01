@@ -11,11 +11,7 @@ import {
   UserAuthorizationRequiredError,
 } from "@vercel/connect";
 
-/**
- * The one subject this app mints tokens under. `appSession()` in
- * `agent/channels/eve.ts` authenticates with the same issuer, so the agent and
- * the web app address the exact same Connect grant.
- */
+/** Matches the issuer `appSession()` authenticates with in agent/channels/eve.ts. */
 function userSubject(userId: string): ConnectTokenSubject {
   return { type: "user", id: userId, issuer: CONNECT_USER_ISSUER };
 }

@@ -63,9 +63,8 @@ function issuesFromToolResult(content: unknown): string[] {
 }
 
 /**
- * Prove a Linear Connect grant works by talking to the same MCP server the
- * agent connection uses. Lists a few issues when the server exposes an issue
- * tool, and otherwise falls back to naming the tools it does expose.
+ * Exercise a Linear grant against the MCP server the agent connection uses.
+ * Lists a few issues, or the server's tool names when it exposes no issue tool.
  */
 export async function fetchLinearIssuesViaMcp(token: string): Promise<string[]> {
   const client = await createMCPClient({

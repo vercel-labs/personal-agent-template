@@ -38,7 +38,7 @@ This name appears in the navbar, settings, and integration cards.
 
 ### Persona and behavior
 
-Edit [`agent/lib/base-instructions.ts`](../agent/lib/base-instructions.ts) — system prompt, tone, tool usage rules, memory behavior.
+Edit [`agent/instructions.ts`](../agent/instructions.ts) — system prompt, tone, tool usage rules, memory behavior.
 
 Search the codebase for `V` to update remaining UI copy in Vue components.
 
@@ -59,20 +59,29 @@ export default defineAgent({
 
 See Eve docs for supported models and provider options.
 
-## 3. Memory categories
+## 3. Memory
 
-Categories are defined in [`shared/types/memory.ts`](../shared/types/memory.ts):
+The `profile` slot binds Eve's `fileMemory()` provider to one document per
+principal — [`agent/memory/profile.ts`](../agent/memory/profile.ts):
 
-- `MEMORY_CATEGORIES` — enum values
-- `MEMORY_CATEGORY_LABELS` — UI labels
-- `MEMORY_CATEGORY_HEADERS` — import parser aliases
+```typescript
+export default defineMemory({
+  description: "Stable facts and preferences about the person you are talking to.",
+  provider: fileMemory(),
+  scope: byPrincipal,
+});
+```
 
-If you add or rename categories, also update:
+- `description` is prepended to both memory tool descriptions, so it is how you
+  tell the model what belongs in this slot.
+- `scope` decides who shares a document. `byPrincipal` gives one per
+  authenticated caller; pass your own resolver for a tenant or workspace scope.
+- `fileMemory({ maxCharacters })` caps the recalled message. It defaults to
+  4,000 characters and rejects rather than truncates.
+- Add `agent/memory/<slot>.ts` for a second, independent slot.
 
-- [`shared/memory/export-prompt.ts`](../shared/memory/export-prompt.ts) — ChatGPT export prompt
-- [`agent/tools/save_memory.ts`](../agent/tools/save_memory.ts) — imports categories from shared types
-
-Each category stores **one prose block**. Saves replace the entire block, not partial deltas.
+See the [Eve memory guide](https://eve.dev/docs/memory) for backends and custom
+providers.
 
 ## 4. Add a tool
 
@@ -81,7 +90,7 @@ Each category stores **one prose block**. Saves replace the entire block, not pa
 3. Add a UI component in `app/components/chat/tool/` if the tool needs custom rendering
 4. Wire the component in [`app/components/chat/message/MessageContentEve.vue`](../app/components/chat/message/MessageContentEve.vue)
 
-See existing tools: [`agent/tools/weather.ts`](../agent/tools/weather.ts), [`agent/tools/save_memory.ts`](../agent/tools/save_memory.ts).
+See [`agent/tools/weather.ts`](../agent/tools/weather.ts) for a worked example.
 
 ## 5. Add a skill
 

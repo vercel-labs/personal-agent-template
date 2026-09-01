@@ -44,6 +44,11 @@ const quickChats = [
     action: () => createChat("What is the weather in Paris?"),
   },
   {
+    label: "What do you remember about me?",
+    icon: "i-lucide-brain",
+    action: () => createChat("What do you remember about me?"),
+  },
+  {
     label: "Summarize my day",
     icon: "i-lucide-calendar-days",
     action: summarizeDay,

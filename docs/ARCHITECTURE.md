@@ -17,8 +17,8 @@ flowchart TB
 
   subgraph eve [Eve agent — agent/]
     channels[Channels: eve · slack]
-    tools[Tools: weather · save_memory]
-    skills[Skills and connections: Linear MCP]
+    tools[Tools: weather · github]
+    skills[Skills · memory · connections: Linear MCP]
   end
 
   subgraph nuxt [Nuxt app — app/ + server/]
@@ -52,23 +52,24 @@ personal-agent-template/
 ├── agent/                    # Eve agent
 │   ├── agent.ts              # Model and agent config
 │   ├── channels/             # eve (web), slack
-│   ├── tools/                # weather, save_memory
+│   ├── tools/                # weather
 │   ├── extensions/           # mounted eve extensions (github)
+│   ├── memory/               # memory slots (profile)
 │   ├── skills/               # e.g. daily-summary.md
 │   ├── connections/          # Linear MCP
-│   ├── lib/                  # base-instructions, memory-internal, slack-internal
-│   └── instructions.ts       # session.started hooks (memory injection)
+│   ├── lib/                  # slack-internal, internal-api
+│   └── instructions.ts       # system instructions
 ├── app/                      # Nuxt frontend
 │   ├── pages/                # chat, settings, login
 │   ├── components/           # chat UI, profile, integrations
-│   └── composables/          # useMemory, useProfile, chat providers
+│   └── composables/          # useProfile, useConnectors, chat providers
 ├── server/                   # Nitro API
 │   ├── api/                  # Public + internal routes
 │   ├── db/                   # Drizzle schema + migrations
-│   └── utils/                # memory, profile, auth, connectors
+│   └── utils/                # profile, auth, connectors, threads
 ├── shared/                   # Cross-layer types and helpers
 │   ├── agent.ts              # Branding metadata
-│   └── types/                # memory, profile, thread, connector
+│   └── types/                # profile, thread, connector
 └── docs/                     # Documentation
 ```
 
@@ -79,16 +80,16 @@ personal-agent-template/
 1. User opens `/chat/[id]` — Nuxt loads thread via `/api/threads`
 2. Chat streams through Eve's Nuxt module (`eve/nuxt`)
 3. Tool calls render in [`MessageContentEve.vue`](../app/components/chat/message/MessageContentEve.vue)
-4. `save_memory` shows approval UI ([`ToolSaveMemory.vue`](../app/components/chat/tool/ToolSaveMemory.vue))
+4. Approvals and questions render through [`AgentInputRequest.vue`](../app/components/AgentInputRequest.vue)
 
-### Session memory injection
+### Memory recall
 
-1. Eve fires `session.started` ([`agent/instructions.ts`](../agent/instructions.ts))
-2. Agent calls `GET /api/internal/memory?userId=...` with bearer token
-3. [`agent/lib/memory-internal.ts`](../agent/lib/memory-internal.ts) builds prompt section
-4. Appended to agent instructions for the session
+1. Eve resolves the `profile` slot's scope to the authenticated principal ([`agent/memory/profile.ts`](../agent/memory/profile.ts))
+2. `fileMemory()` reads that principal's document from private Vercel Blob storage
+3. The indexed entries are recalled on `turn.started` and again after compaction
 
-Start a **new chat** after importing memory so injection picks up changes.
+Records arrive as untrusted user-role messages, never as system instructions.
+The agent maintains them with `profile__save_memory` and `profile__remove_memory`.
 
 ### Slack
 
@@ -115,8 +116,6 @@ Validated in [`server/utils/internal-api.ts`](../server/utils/internal-api.ts).
 
 | Route | Purpose |
 |-------|---------|
-| `GET /api/internal/memory` | Fetch user memory for session injection |
-| `POST /api/internal/memory` | Save memory from agent tool |
 | `GET /api/internal/phone/link` | Resolve phone number → app user |
 | `GET /api/internal/slack/link/member` | Resolve Slack user → app user |
 | `POST /api/internal/slack/link/consume` | Consume link code |
@@ -134,7 +133,6 @@ Key tables:
 | `user` / `session` / `account` | Better Auth |
 | `threads` | Chat threads |
 | `user_profile` | Name, timezone, phone |
-| `user_memory` | Long-term memory by category |
 | `phone_links` | Phone ↔ app user mapping (reserved for a messaging channel) |
 | `slack_links` | Slack ↔ app user mapping |
 | `slack_link_codes` | Temporary link codes |
@@ -143,10 +141,11 @@ Migrations: `pnpm db:generate` → `pnpm db:migrate`.
 
 ## Memory model
 
-- **Categories** — fixed set in [`shared/types/memory.ts`](../shared/types/memory.ts)
-- **One block per category** — `setMemoryForCategory` replaces all rows for a category
-- **Sources** — `import`, `agent`, `manual`
-- **Import** — Raycast-style paste parser ([`server/utils/memory-import.ts`](../server/utils/memory-import.ts))
+- **Provider** — Eve's `fileMemory()`, one bounded document per scope
+- **Scope** — `byPrincipal`: one document per authenticated caller
+- **Storage** — private Vercel Blob, `eve/memory/file/<scope>/MEMORY.md`
+- **Tools** — `profile__save_memory`, `profile__remove_memory`
+- **Bounds** — 4,000 recalled characters, 2 KB per entry, 64 KB per document
 
 ## Auth
 

@@ -6,12 +6,7 @@ import type { ChatSession, ChatSessionOptions, ChatStatus } from "~/composables/
 import { toUIMessages } from "./adapter";
 import { getOrCreateEveAgent } from "./init";
 
-/**
- * eve reports `"resuming"` while it replays an attached durable session. The
- * Nuxt UI chat components only understand the four AI SDK statuses, and a
- * resuming session is busy from the user's point of view, so fold it into
- * `"submitted"`.
- */
+/** The Nuxt UI chat components accept the four AI SDK statuses only. */
 function toChatStatus(status: UseEveAgentStatus): ChatStatus {
   return status === "resuming" ? "submitted" : status;
 }

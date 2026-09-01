@@ -6,12 +6,7 @@ export interface ThreadSummary {
 }
 
 export interface ThreadRecord extends ThreadSummary {
-  /**
-   * The eve session backing this thread, or `null` before its first message.
-   *
-   * eve owns the transcript. The client replays it from the durable session
-   * stream, so the app stores the identifier and nothing else.
-   */
+  /** The eve session backing this thread, or `null` before its first message. */
   sessionId: string | null;
 }
 

@@ -15,8 +15,6 @@ export function getOrCreateEveAgent(chatId: string, options?: ChatSessionOptions
       initialSession: options?.initialSession,
       resume: options?.resume,
       onSessionChange: (session) => {
-        // eve mints the session on the first message. Bind it to the thread
-        // once; every later turn reuses the same id.
         if (session && session.sessionId !== knownSessionId) {
           void persistThreadSession(chatId, session.sessionId);
         }

@@ -72,11 +72,17 @@ Shared bearer token between the Eve agent service and the Nuxt internal API (`/a
 
 Used for:
 
-- Memory read/write from the agent
 - Slack account linking
 - Phone linking lookup
 
-**Must be identical** on both Vercel services (`web` and `eve`). If missing or mismatched, memory injection and Slack linking will fail silently or return 401.
+**Must be identical** on both Vercel services (`web` and `eve`). If missing or mismatched, Slack and phone linking will fail silently or return 401.
+
+## Vercel Blob (memory)
+
+Eve's `fileMemory()` provider stores one private Blob document per user at
+`eve/memory/file/<scope>/MEMORY.md`. Attach a Blob store to the project and
+`BLOB_READ_WRITE_TOKEN` is provided automatically; without one the agent fails
+on its first memory recall.
 
 ## AI provider
 
