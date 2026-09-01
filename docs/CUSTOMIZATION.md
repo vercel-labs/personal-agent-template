@@ -104,6 +104,11 @@ Uses Vercel Connect OAuth and the [@github-tools/eve-extension](https://github-t
 
 The mount filename is the namespace, so tools reach the model as `github__listPullRequests`, `github__createIssue`, and so on. Narrow the catalog with `preset`, `include` and `exclude`, and set per-tool approval with `requireApproval`.
 
+`connect.subject` resolves per caller, so each user reaches GitHub through their
+own Connect grant. Leave it out and the extension mints `{ type: "app" }` — the
+project's own installation — which every signed-in user would share whether or
+not they connected an account.
+
 1. Create a GitHub connector in Vercel Connect:
 
    ```bash
