@@ -17,6 +17,9 @@ importers:
       '@github-tools/eve-extension':
         specifier: ^0.6.0
         version: 0.6.0(d8e34ef5b90ccf16764f10f874a94dd2)
+      '@github-tools/sdk':
+        specifier: ^1.15.0
+        version: 1.15.0(221ac3c3f0c2291a3f2ab56cefce5396)
       '@libsql/client':
         specifier: ^0.17.4
         version: 0.17.4

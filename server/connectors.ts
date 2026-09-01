@@ -1,5 +1,6 @@
 import type { ConnectorDef } from "#shared/types/connector";
-import { GITHUB_CONNECTOR } from "#shared/connect";
+import { connectGithubScopesForPreset } from "@github-tools/sdk/connect";
+import { GITHUB_CONNECTOR, GITHUB_PRESET } from "#shared/connect";
 import { fetchLinearIssuesViaMcp } from "~~/server/utils/linear-mcp";
 
 export const connectors: ConnectorDef[] = [
@@ -10,7 +11,7 @@ export const connectors: ConnectorDef[] = [
     connector: GITHUB_CONNECTOR,
     connectionName: "github",
     icon: "i-simple-icons-github",
-    scopes: ["repo"],
+    scopes: connectGithubScopesForPreset(GITHUB_PRESET),
     test: {
       label: "List my repositories",
       run: async (token) => {

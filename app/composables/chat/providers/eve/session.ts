@@ -45,7 +45,6 @@ export function createEveChatSession(
   // it as in flight so the prompt shows the turn was accepted instead of going
   // silent for as long as the replay takes.
   const queuedSend = ref(false);
-  const queuedText = ref<string>();
 
   const status = computed(() => {
     if (queuedSend.value) return "submitted";
@@ -68,13 +67,12 @@ export function createEveChatSession(
    * rather than dropping the message: the prompt stays usable and the turn
    * goes as soon as the replay finishes.
    */
-  async function whenSendable(text?: string) {
+  async function whenSendable() {
     if (agent.value.status.value !== "resuming") {
       return;
     }
 
     queuedSend.value = true;
-    queuedText.value = text;
     try {
       await new Promise<void>((resolve) => {
         const stop = watch(agent.value.status, (value) => {
@@ -86,7 +84,6 @@ export function createEveChatSession(
     }
     finally {
       queuedSend.value = false;
-      queuedText.value = undefined;
     }
   }
 
@@ -94,7 +91,7 @@ export function createEveChatSession(
     const trimmed = text.trim();
     if (!trimmed) return;
     clearTurnFailure(id.value);
-    await whenSendable(trimmed);
+    await whenSendable();
     await agent.value.send(trimmed);
   }
 
@@ -125,7 +122,6 @@ export function createEveChatSession(
 
   return {
     messages,
-    pendingMessage: computed(() => queuedText.value),
     status,
     error,
     isBusy,

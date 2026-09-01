@@ -12,12 +12,10 @@ export interface ChatSessionOptions {
 
 export interface ChatSession {
   messages: ComputedRef<UIMessage[]>;
-  /** Text accepted by the prompt while the session finishes replaying. */
-  pendingMessage: ComputedRef<string | undefined>;
   status: Ref<ChatStatus> | ComputedRef<ChatStatus>;
   error: Ref<Error | undefined> | ComputedRef<Error | undefined>;
   isBusy: ComputedRef<boolean>;
-  sendMessage: (text: string) => Promise<void>;
+  sendMessage: (text: string, onAccepted?: () => void) => Promise<void>;
   sendInputResponses: (responses: AgentInputResponse[]) => Promise<void>;
   cancel: () => Promise<void>;
   reset: () => void;
