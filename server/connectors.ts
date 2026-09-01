@@ -1,9 +1,6 @@
 import type { ConnectorDef } from "#shared/types/connector";
 import { GITHUB_CONNECTOR } from "#shared/connect";
-import {
-  fetchLinearIssuesViaGraphql,
-  fetchLinearIssuesViaMcp,
-} from "~~/server/utils/linear-mcp";
+import { fetchLinearIssuesViaMcp } from "~~/server/utils/linear-mcp";
 
 export const connectors: ConnectorDef[] = [
   {
@@ -44,19 +41,7 @@ export const connectors: ConnectorDef[] = [
     scopes: [],
     test: {
       label: "List my issues",
-      run: async (token) => {
-        const mcpResult = await fetchLinearIssuesViaMcp(token);
-        if (mcpResult.ok) {
-          return mcpResult.results;
-        }
-
-        const graphqlResult = await fetchLinearIssuesViaGraphql(token);
-        if (graphqlResult.ok) {
-          return graphqlResult.results;
-        }
-
-        throw new Error(mcpResult.error ?? graphqlResult.error ?? "Linear test failed");
-      },
+      run: token => fetchLinearIssuesViaMcp(token),
     },
   },
 ];

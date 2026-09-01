@@ -33,6 +33,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@ai-sdk/mcp": "^2.0.41",
     "@comark/nuxt": "^0.6.2",
     "@github-tools/eve-extension": "^0.5.1",
     "@libsql/client": "^0.17.4",
