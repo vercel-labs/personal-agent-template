@@ -2,16 +2,13 @@ import { connect } from "@vercel/connect/eve";
 import { defineMcpClientConnection } from "eve/connections";
 
 const CONNECTOR = "mcp.linear.app/linear";
-const USER_ISSUER = "app";
 
+// Connect maps app principals to `{ type: "app" }` and user principals to
+// `{ type: "user", id, issuer }` by default, which is exactly what this
+// connection needs — `appSession()` already issues under CONNECT_USER_ISSUER.
 const connectAuth = connect({
   connector: CONNECTOR,
   validate: true,
-  principalToSubject: (principal) => ({
-    type: "user",
-    id: principal.id,
-    issuer: principal.issuer ?? principal.authenticator ?? USER_ISSUER,
-  }),
 });
 
 async function completeAuthorizationWithRetry(

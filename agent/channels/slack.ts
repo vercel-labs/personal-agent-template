@@ -80,7 +80,7 @@ async function tryHandleSlackLinkCommand(
 }
 
 async function resolveSlackInboundAuth(
-  slackAuth: ReturnType<typeof defaultSlackAuth>,
+  slackAuth: NonNullable<ReturnType<typeof defaultSlackAuth>>,
   member: {
     teamId?: string | null;
     userId: string;

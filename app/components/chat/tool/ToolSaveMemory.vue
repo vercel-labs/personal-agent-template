@@ -79,7 +79,7 @@ const allUnchanged = computed(() =>
 const allDeclined = computed(() =>
   props.parts.every(part =>
     part.state === "output-denied"
-    || part.toolMetadata?.eve?.inputResponse?.optionId === "deny",
+    || part.toolMetadata?.eve?.inputResponse?.optionId === "cancel",
   ),
 );
 
@@ -128,7 +128,7 @@ const errorText = computed(() =>
   props.parts.map(part => part.errorText).filter(Boolean).join(" "),
 );
 
-function respond(optionId: "approve" | "deny") {
+function respond(optionId: "approve" | "cancel") {
   const responses = pendingParts.value.flatMap((part) => {
     const requestId = part.toolMetadata?.eve?.inputRequest?.requestId;
     return requestId ? [{ optionId, requestId }] : [];
@@ -250,7 +250,7 @@ watch(allSaved, (saved) => {
         variant="ghost"
         size="xs"
         :disabled="!canRespond"
-        @click="respond('deny')"
+        @click="respond('cancel')"
       >
         {{ skipLabel }}
       </UButton>

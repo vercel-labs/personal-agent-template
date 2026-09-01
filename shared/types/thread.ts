@@ -5,9 +5,12 @@ export interface ThreadSummary {
   createdAt: number;
 }
 
+/**
+ * Durable session cursor. Mirrors eve's `ClientSessionState`: since eve 0.31
+ * sessions are ID-addressed and continuation tokens no longer exist.
+ */
 export interface EveSessionCursor {
-  sessionId?: string;
-  continuationToken?: string;
+  sessionId: string;
   streamIndex: number;
 }
 

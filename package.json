@@ -14,7 +14,7 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@11.24.0",
   "type": "module",
   "imports": {
     "#*": "./agent/*"
@@ -23,39 +23,38 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "start": "nuxt preview",
-    "typecheck": "nuxt typecheck",
+    "typecheck": "nuxt typecheck && tsc -p tsconfig.agent.json",
     "db:generate": "nuxt db generate",
-    "db:migrate": "nuxt db migrate"
+    "db:migrate": "nuxt db migrate",
+    "typecheck:app": "nuxt typecheck",
+    "typecheck:agent": "tsc -p tsconfig.agent.json"
   },
   "dependencies": {
-    "@comark/nuxt": "^0.5.0",
+    "@comark/nuxt": "^0.6.2",
     "@github-tools/sdk": "^1.7.0",
     "@libsql/client": "^0.17.4",
-    "@nuxt/ui": "^4.9.0",
-    "@nuxthub/core": "^0.10.7",
-    "@shikijs/langs": "^4.3.1",
+    "@nuxt/ui": "^4.11.0",
+    "@nuxthub/core": "^0.10.8",
+    "@shikijs/langs": "^4.4.3",
     "@vercel/analytics": "^2.0.1",
     "@vercel/connect": "0.3.2",
-    "ai": "^7.0.16",
-    "better-auth": "^1.6.23",
-    "chat": "^4.32.0",
-    "chat-adapter-sendblue": "^0.2.0",
+    "ai": "^7.0.85",
+    "better-auth": "^1.7.2",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
-    "eve": "^0.20.0",
+    "eve": "^0.47.3",
     "maska": "^3.2.0",
-    "nuxt": "^4.4.8",
-    "shiki": "^4.3.1",
-    "tailwindcss": "^4.3.2",
-    "vue": "^3.5.39",
-    "zod": "4.4.3"
+    "nuxt": "^4.5.2",
+    "shiki": "^4.4.3",
+    "tailwindcss": "^4.3.3",
+    "vue": "^3.5.42",
+    "zod": "4.5.4"
   },
   "devDependencies": {
-    "@iconify-json/lucide": "^1.2.116",
-    "@iconify-json/simple-icons": "^1.2.89",
-    "@types/node": "26.1.0",
-    "microsandbox": "^0.6.5",
+    "@iconify-json/lucide": "^1.2.127",
+    "@iconify-json/simple-icons": "^1.2.94",
+    "@types/node": "26.4.0",
     "typescript": "^6.0.3",
-    "vue-tsc": "^3.3.6"
+    "vue-tsc": "^3.3.11"
   }
 }

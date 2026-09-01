@@ -10,8 +10,7 @@ export const createThreadBodySchema = z.object({
 });
 
 const eveSessionSchema = z.object({
-  sessionId: z.string().trim().min(1).optional(),
-  continuationToken: z.string().trim().min(1).optional(),
+  sessionId: z.string().trim().min(1),
   streamIndex: z.number().int().min(0),
 });
 

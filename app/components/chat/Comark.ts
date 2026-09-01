@@ -19,7 +19,7 @@ import toml from "@shikijs/langs/toml";
 import graphql from "@shikijs/langs/graphql";
 import SourceLink from "./SourceLink.vue";
 
-export default defineComarkComponent({
+export default defineMarkdownComponent({
   name: "ChatComark",
   plugins: [
     highlight({

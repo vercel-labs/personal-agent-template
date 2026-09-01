@@ -20,7 +20,7 @@ export interface ChatSession {
   isBusy: ComputedRef<boolean>;
   sendMessage: (text: string) => Promise<void>;
   sendInputResponses: (responses: AgentInputResponse[]) => Promise<void>;
-  stop: () => void;
+  cancel: () => Promise<void>;
   reset: () => void;
   retry: () => Promise<void>;
 }

@@ -10,7 +10,7 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template&env=BETTER_AUTH_SECRET,BETTER_AUTH_URL,INTERNAL_API_SECRET&envDescription=BETTER_AUTH_SECRET%3A%20run%20openssl%20rand%20-base64%2032%20%7C%20BETTER_AUTH_URL%3A%20your%20production%20URL%20%7C%20INTERNAL_API_SECRET%3A%20shared%20secret%20for%20web%20%2B%20eve&envLink=https%3A%2F%2Fgithub.com%2Fvercel-labs%2Fpersonal-agent-template%2Fblob%2Fmain%2Fdocs%2FENVIRONMENT.md&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22tursocloud%22%2C%22productSlug%22%3A%22database%22%2C%22protocol%22%3A%22storage%22%7D%5D&project-name=personal-agent&repository-name=personal-agent)
 
-Open source personal agent template. Web chat, Slack, iMessage, GitHub, Linear, and long-term memory — one codebase, durable sessions, user-approved memory saves.
+Open source personal agent template. Web chat, Slack, GitHub, Linear, and long-term memory — one codebase, durable sessions, user-approved memory saves.
 
 ## Features
 
@@ -21,10 +21,6 @@ Chat with your agent in the browser. Threads resume across sessions, tool calls 
 ### Slack — Same Agent, Different Surface
 
 DMs and @mentions on Slack. Link your Slack account to your web profile so memory and context follow you across channels.
-
-### iMessage — Text Your Agent
-
-Reach V over iMessage via [Sendblue](https://chat-sdk.dev/adapters/vendor-official/sendblue). Add your phone number in **Profile**, then message the Sendblue line — same memory and context as web and Slack.
 
 ### GitHub — Repos, PRs, and CI
 
@@ -46,7 +42,7 @@ Morning briefing skill: active focus from memory, assigned Linear issues, and a 
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│              Web chat · Slack DMs / mentions · iMessage           │
+│                  Web chat · Slack DMs / mentions                 │
 └───────────────────────────────┬─────────────────────────────────┘
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -61,7 +57,7 @@ Morning briefing skill: active focus from memory, assigned Linear issues, and a 
                       Vercel Connect (Linear, Slack)
 ```
 
-On Vercel, two services deploy from [`vercel.json`](vercel.json): `web` (Nuxt) and `eve` (agent runtime).
+On Vercel the deployment splits into two services: `web` (Nuxt) and `eve` (agent runtime). The `eve/nuxt` module generates the eve service and its `/eve/v1/*` route during the build — nothing to declare in `vercel.json`.
 
 ## Quick Start
 
@@ -108,13 +104,13 @@ Personal Agent Template ships with **V** as the example persona. See the [Custom
 - Rename your agent (name, slug, persona)
 - Change the AI model
 - Add tools and skills
-- Configure Slack, iMessage, and Linear integrations
+- Configure Slack and Linear integrations
 - Theme the UI
 - Deploy your fork
 
 ## Memory
 
-Long-term memory is injected into every Eve session for authenticated users (web, linked Slack, and iMessage).
+Long-term memory is injected into every Eve session for authenticated users (web and linked Slack).
 
 1. Open **Profile → Import Memory**
 2. Copy the export prompt into ChatGPT, Claude, etc.
@@ -129,7 +125,7 @@ V can also propose facts via **`save_memory`** — approve or skip in chat. Edit
 
 1. **Auth**: Users sign in via Better Auth (email/password)
 2. **Session start**: Eve fetches profile + memory and injects into agent instructions
-3. **Chat**: Web UI streams through Eve; Slack events hit the slack channel; iMessage via Sendblue
+3. **Chat**: Web UI streams through Eve; Slack events hit the slack channel
 4. **Tools**: Agent calls weather, save_memory, Linear MCP as needed
 5. **Internal API**: Agent reads/writes memory, Slack links, and phone links via authenticated Nitro routes
 

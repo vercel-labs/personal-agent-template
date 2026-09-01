@@ -12,6 +12,12 @@ function parseThreadState(value: string | null): ThreadState | null {
     if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.events)) {
       return null;
     }
+    // Rows written before eve 0.31 carry a continuation token and no session
+    // id. They cannot be resumed against an ID-addressed session, so retire
+    // them rather than replaying them into a session that no longer exists.
+    if (typeof parsed.session?.sessionId !== "string") {
+      return null;
+    }
     return parsed;
   }
   catch {
@@ -21,19 +27,6 @@ function parseThreadState(value: string | null): ThreadState | null {
 
 function serializeThreadState(state: ThreadState | undefined) {
   return state ? JSON.stringify(state) : null;
-}
-
-function mergeThreadState(existing: ThreadState | null, incoming: ThreadState): ThreadState {
-  const session = incoming.session;
-
-  return {
-    session: {
-      sessionId: session.sessionId ?? existing?.session.sessionId,
-      continuationToken: session.continuationToken ?? existing?.session.continuationToken,
-      streamIndex: session.streamIndex,
-    },
-    events: incoming.events,
-  };
 }
 
 function rowToSummary(row: typeof schema.threads.$inferSelect): ThreadSummary {
@@ -116,7 +109,7 @@ export async function updateThreadForUser(
       updatedAt: new Date(),
       ...(patch.title !== undefined ? { title: truncateThreadTitle(patch.title) } : {}),
       ...(patch.state !== undefined
-        ? { state: serializeThreadState(mergeThreadState(existing.state, patch.state)) }
+        ? { state: serializeThreadState(patch.state) }
         : {}),
     })
     .where(and(

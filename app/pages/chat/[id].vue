@@ -36,7 +36,7 @@ const {
   isBusy,
   sendMessage,
   sendInputResponses,
-  stop,
+  cancel,
   retry,
 } = useChatSession(chatId, () => data.value?.resume ?? {});
 
@@ -164,7 +164,7 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
                 :status="status"
                 color="neutral"
                 size="sm"
-                @stop="stop()"
+                @stop="cancel()"
                 @reload="retry()"
               />
             </template>
