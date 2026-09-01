@@ -9,7 +9,9 @@ Durable personal AI assistant built with Eve and Nuxt.
 | `pnpm install` | Install dependencies |
 | `pnpm dev` | Start Nuxt + Eve dev server |
 | `pnpm build` | Production build |
-| `pnpm typecheck` | TypeScript check |
+| `pnpm lint` | ESLint (`pnpm lint:fix` to autofix) |
+| `pnpm typecheck` | TypeScript check — app/server/shared plus `agent/` |
+| `pnpm build:agent` | Build the Eve agent on its own |
 | `pnpm db:generate` | Generate Drizzle migrations |
 | `pnpm db:migrate` | Apply migrations |
 
@@ -33,7 +35,9 @@ personal-agent-template/
 
 ## Eve Framework
 
-This project uses Eve with a Nuxt frontend (`eve/nuxt` module). Before writing agent code, read the relevant guide in `node_modules/eve/dist/docs/public/`.
+This project uses Eve with a Nuxt frontend (`eve/nuxt` module). Before writing agent code, read the relevant guide in `node_modules/eve/docs/` — start with `docs/README.md`, which maps each task to its page.
+
+`nuxt typecheck` does not cover `agent/`, and `eve build` bundles without typechecking. `pnpm typecheck` runs both halves; keep it that way when adding agent code.
 
 ## Internal API Pattern
 

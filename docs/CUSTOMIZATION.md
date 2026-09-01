@@ -52,7 +52,7 @@ Edit [`agent/agent.ts`](../agent/agent.ts):
 
 ```typescript
 export default defineAgent({
-  model: "anthropic/claude-sonnet-4.6", // change provider/model
+  model: "anthropic/claude-sonnet-5", // change provider/model
   // ...
 });
 ```

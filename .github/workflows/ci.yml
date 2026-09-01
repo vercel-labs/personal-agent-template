@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  typecheck:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -23,4 +23,18 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      # Covers app/, server/ and shared/ (nuxt typecheck) plus agent/ (tsc).
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build web
+        run: pnpm build
+
+      # nuxt build only generates the eve service on Vercel, so build the
+      # agent explicitly here.
+      - name: Build agent
+        run: pnpm build:agent

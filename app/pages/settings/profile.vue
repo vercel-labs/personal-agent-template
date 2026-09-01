@@ -73,7 +73,7 @@ function resetForm() {
     :ui="{ body: 'p-0 sm:p-0' }"
   >
     <template #header>
-      <Navbar />
+      <AppNavbar />
     </template>
 
     <template #body>

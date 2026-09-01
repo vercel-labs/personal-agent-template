@@ -27,7 +27,10 @@
     "db:generate": "nuxt db generate",
     "db:migrate": "nuxt db migrate",
     "typecheck:app": "nuxt typecheck",
-    "typecheck:agent": "tsc -p tsconfig.agent.json"
+    "typecheck:agent": "tsc -p tsconfig.agent.json",
+    "build:agent": "eve build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@comark/nuxt": "^0.6.2",
@@ -53,7 +56,9 @@
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.127",
     "@iconify-json/simple-icons": "^1.2.94",
+    "@nuxt/eslint": "^1.17.0",
     "@types/node": "26.4.0",
+    "eslint": "^10.9.1",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.11"
   }

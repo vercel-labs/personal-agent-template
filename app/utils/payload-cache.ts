@@ -14,6 +14,10 @@ export const payloadCacheOptions = {
 
 export function clearCachedPayloadData(key: string, nuxtApp?: NuxtApp) {
   const app = nuxtApp ?? useNuxtApp();
+  // Remove the keys rather than blanking them, so stale entries are not
+  // carried into the serialized SSR payload.
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete app.payload.data[key];
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete app.static.data[key];
 }

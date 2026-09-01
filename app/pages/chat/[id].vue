@@ -87,13 +87,13 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
     :ui="{ body: 'p-0 sm:p-0 overscroll-none' }"
   >
     <template #header>
-      <Navbar>
+      <AppNavbar>
         <template #title>
           <p class="truncate text-sm font-medium text-highlighted">
             {{ thread.title }}
           </p>
         </template>
-      </Navbar>
+      </AppNavbar>
     </template>
 
     <template #body>

@@ -4,13 +4,14 @@ packages:
 minimumReleaseAgeExclude:
   - eve
   - "@vercel/connect"
-  - '@github-tools/eve-extension@0.5.1'
-  - '@github-tools/sdk@1.14.0'
+  - "@github-tools/eve-extension"
+  - "@github-tools/sdk"
 
 # pnpm 10+ requires each build script to be allowed explicitly.
 allowBuilds:
   "@parcel/watcher": true
   better-sqlite3: true
   esbuild: true
+  unrs-resolver: true
   vue-demi: true
   sharp: false

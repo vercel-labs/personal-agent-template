@@ -25,7 +25,7 @@ defineProps<{
     v-else
     class="flex items-center gap-2.5"
   >
-    <Logo class="h-3.5 w-auto text-highlighted" />
+    <AppLogo class="h-3.5 w-auto text-highlighted" />
     <span class="text-sm font-semibold text-highlighted">
       {{ agent.name }}
     </span>

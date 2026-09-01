@@ -83,7 +83,7 @@ Used for:
 This template does not define AI keys in `.env.example`. The default model is set in [`agent/agent.ts`](../agent/agent.ts):
 
 ```typescript
-model: "anthropic/claude-sonnet-4.6"
+model: "anthropic/claude-sonnet-5"
 ```
 
 On Vercel, Eve handles provider configuration through the platform. For local development, follow [Eve docs](https://eve.dev) for your chosen provider.

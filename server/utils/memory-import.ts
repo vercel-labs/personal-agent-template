@@ -1,10 +1,7 @@
 import {
   MEMORY_CATEGORIES,
   MEMORY_CATEGORY_HEADERS,
-  type MemoryByCategory,
   type MemoryCategory,
-  type MemoryEntry,
-  type MemorySource,
 } from "#shared/types/memory";
 
 const HEADER_PATTERN = /^#{1,3}\s*\d*\.?\s*(.+?)\s*$/im;
