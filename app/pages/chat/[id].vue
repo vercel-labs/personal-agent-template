@@ -14,13 +14,18 @@ interface ThreadPageData {
   resume: ReturnType<typeof resumeOptionsFromThread>;
 }
 
+// Fetched during the server render too, so the durable session id is known
+// before the chat session is created — otherwise a hard refresh would bind an
+// agent with no session to resume and show an empty transcript.
+const requestFetch = useRequestFetch();
+
 const { data, error, pending: resumePending } = await useAsyncData(
   () => `thread-${chatId.value}`,
   async (): Promise<ThreadPageData> => {
-    const { thread } = await $fetch<{ thread: ThreadRecord }>(`/api/threads/${chatId.value}`);
+    const { thread } = await requestFetch<{ thread: ThreadRecord }>(`/api/threads/${chatId.value}`);
     return { thread, resume: resumeOptionsFromThread(thread) };
   },
-  { watch: [chatId], server: false, ...payloadCacheOptions },
+  { watch: [chatId] },
 );
 
 if (error.value || !data.value?.thread) {

@@ -1,6 +1,14 @@
 import { defineAgent } from "eve";
 
 export default defineAgent({
-  // Claude 5 models think adaptively on their own, at effort `high` by default.
   model: "anthropic/claude-sonnet-5",
+  modelOptions: {
+    providerOptions: {
+      anthropic: {
+        // Claude 5 thinks adaptively on its own but omits the reasoning text
+        // by default, which would render as an empty "Thinking…" block.
+        thinking: { type: "adaptive", display: "summarized" },
+      },
+    },
+  },
 });

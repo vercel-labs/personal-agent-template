@@ -12,7 +12,7 @@ import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import type { ChatStatus } from "~/composables/chat/types";
 import { getMergedParts } from "~/utils/chat/ai";
-import { hasVisibleParts, getToolDisplayName, normalizeEveParts, shouldShowToolInput } from "~/utils/chat/eve";
+import { hasVisibleParts, getToolDisplayName, getToolNamespace, normalizeEveParts, shouldShowToolInput } from "~/utils/chat/eve";
 import type { WeatherUIToolInvocation } from "~~/shared/utils/tools/weather";
 
 const props = defineProps<{
@@ -56,7 +56,7 @@ const showThinking = computed(
       chevron="leading"
     >
       <ChatComark
-        :markdown="part.text"
+        :value="part.text"
         :streaming="isPartStreaming(part)"
       />
     </UChatReasoning>
@@ -79,6 +79,7 @@ const showThinking = computed(
       <UChatTool
         v-else-if="getToolName(part) !== 'ask_question'"
         :text="isDynamicToolUIPart(part) ? getToolDisplayName(part as EveDynamicToolPart) : getToolName(part)"
+        :suffix="isDynamicToolUIPart(part) ? getToolNamespace(part as EveDynamicToolPart) : undefined"
         :streaming="isToolStreaming(part)"
         chevron="leading"
         :default-open="part.state === 'approval-requested' || part.state === 'approval-responded'"
@@ -118,7 +119,7 @@ const showThinking = computed(
       >
         <ChatComark
           :key="isPartStreaming(part) ? `${message.id}-text-${part.text.length}` : `${message.id}-text-${index}`"
-          :markdown="part.text"
+          :value="part.text"
           :streaming="isPartStreaming(part)"
         />
         <span

@@ -3,6 +3,7 @@ import type { ChatSessionOptions } from "~/composables/chat/types";
 import { recordAuthorizationEvent } from "~/composables/chat/useAuthorizationChallenges";
 import { persistThreadSession } from "./thread-session";
 import { recordStreamEvent } from "./stream-log";
+import { recordTurnFailure } from "./turn-errors";
 
 const agentsByChatId = new Map<string, UseEveAgentReturn<EveMessageData>>();
 
@@ -24,6 +25,10 @@ export function getOrCreateEveAgent(chatId: string, options?: ChatSessionOptions
           recordAuthorizationEvent(event);
         }
 
+        if (event.type === "turn.failed" || event.type === "session.failed") {
+          recordTurnFailure(chatId, event);
+        }
+
         if (!import.meta.dev) return;
         recordStreamEvent(event.type);
       },
@@ -35,11 +40,4 @@ export function getOrCreateEveAgent(chatId: string, options?: ChatSessionOptions
 
 export function removeEveAgent(chatId: string) {
   agentsByChatId.delete(chatId);
-}
-
-export function resetAllEveAgents() {
-  for (const agent of agentsByChatId.values()) {
-    agent.reset();
-  }
-  agentsByChatId.clear();
 }

@@ -1,7 +1,7 @@
 import type { MaybeRefOrGetter } from "vue";
 import { nextTick, toValue } from "vue";
 import type { ThreadRecord, ThreadSummary } from "#shared/types/thread";
-import { resetAllEveAgents, removeEveAgent } from "~/composables/chat/providers/eve/init";
+import { removeEveAgent } from "~/composables/chat/providers/eve/init";
 import { resetStreamLog } from "~/composables/chat/providers/eve/stream-log";
 import { truncateThreadTitle } from "#shared/types/thread";
 import { clearCachedPayloadData } from "~/utils/payload-cache";
@@ -90,7 +90,6 @@ export function consumePendingMessage(chatId: string) {
 export async function startNewChat() {
   pendingMessage = null;
   resetStreamLog();
-  resetAllEveAgents();
   await navigateWithChatPromptTransition("/");
 }
 
