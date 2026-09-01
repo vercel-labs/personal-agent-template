@@ -91,7 +91,9 @@ Skills are markdown files in [`agent/skills/`](../agent/skills/). See [`daily-su
 
 ### GitHub
 
-Uses Vercel Connect OAuth and [@github-tools/sdk/eve](https://github-tools.com/frameworks/eve). Connector UID: [`shared/connect.ts`](../shared/connect.ts) (`GITHUB_CONNECTOR`), registry: [`server/connectors.ts`](../server/connectors.ts), tools: [`agent/tools/github.ts`](../agent/tools/github.ts).
+Uses Vercel Connect OAuth and the [@github-tools/eve-extension](https://github-tools.com/frameworks/eve) mount. Connector UID: [`shared/connect.ts`](../shared/connect.ts) (`GITHUB_CONNECTOR`), registry: [`server/connectors.ts`](../server/connectors.ts), mount: [`agent/extensions/github.ts`](../agent/extensions/github.ts).
+
+The mount filename is the namespace, so tools reach the model as `github__listPullRequests`, `github__createIssue`, and so on. Narrow the catalog with `preset`, `include` and `exclude`, and set per-tool approval with `requireApproval`.
 
 1. Create a GitHub connector in Vercel Connect:
 

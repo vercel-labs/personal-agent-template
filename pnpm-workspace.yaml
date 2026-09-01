@@ -4,6 +4,8 @@ packages:
 minimumReleaseAgeExclude:
   - eve
   - "@vercel/connect"
+  - '@github-tools/eve-extension@0.5.1'
+  - '@github-tools/sdk@1.14.0'
 
 # pnpm 10+ requires each build script to be allowed explicitly.
 allowBuilds:

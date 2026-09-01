@@ -24,7 +24,7 @@ DMs and @mentions on Slack. Link your Slack account to your web profile so memor
 
 ### GitHub — Repos, PRs, and CI
 
-Connect GitHub via Vercel Connect. Ask about repositories, pull requests, issues, and workflows — the agent uses [@github-tools/sdk](https://github-tools.com/frameworks/eve) tools with durable approval on writes.
+Connect GitHub via Vercel Connect. Ask about repositories, pull requests, issues, and workflows — the agent mounts the [@github-tools/eve-extension](https://github-tools.com/frameworks/eve) tools with durable approval on writes.
 
 ### Linear — Issues On Demand
 

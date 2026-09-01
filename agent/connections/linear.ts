@@ -3,41 +3,14 @@ import { defineMcpClientConnection } from "eve/connections";
 
 const CONNECTOR = "mcp.linear.app/linear";
 
-// Connect maps app principals to `{ type: "app" }` and user principals to
-// `{ type: "user", id, issuer }` by default, which is exactly what this
-// connection needs — `appSession()` already issues under CONNECT_USER_ISSUER.
-const connectAuth = connect({
-  connector: CONNECTOR,
-  validate: true,
-});
-
-async function completeAuthorizationWithRetry(
-  opts: Parameters<NonNullable<typeof connectAuth.completeAuthorization>>[0],
-) {
-  const delays = [0, 500, 1000, 2000];
-  let lastError: unknown;
-
-  for (const delay of delays) {
-    if (delay > 0) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-
-    try {
-      return await connectAuth.completeAuthorization!(opts);
-    }
-    catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError;
-}
-
 export default defineMcpClientConnection({
   url: "https://mcp.linear.app/mcp",
   description: "Linear workspace: issues, projects, cycles, and comments.",
-  auth: {
-    ...connectAuth,
-    completeAuthorization: completeAuthorizationWithRetry,
-  },
+  // Connect maps app principals to `{ type: "app" }` and user principals to
+  // `{ type: "user", id, issuer }` by default, which is what `appSession()`
+  // already issues. Nothing to override.
+  auth: connect({
+    connector: CONNECTOR,
+    validate: true,
+  }),
 });

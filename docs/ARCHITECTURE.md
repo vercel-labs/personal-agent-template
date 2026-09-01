@@ -53,6 +53,7 @@ personal-agent-template/
 │   ├── agent.ts              # Model and agent config
 │   ├── channels/             # eve (web), slack
 │   ├── tools/                # weather, save_memory
+│   ├── extensions/           # mounted eve extensions (github)
 │   ├── skills/               # e.g. daily-summary.md
 │   ├── connections/          # Linear MCP
 │   ├── lib/                  # base-instructions, memory-internal, slack-internal

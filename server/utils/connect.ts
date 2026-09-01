@@ -12,18 +12,13 @@ import {
   UserAuthorizationRequiredError,
 } from "@vercel/connect";
 
-function userSubjects(userId: string): ConnectTokenSubject[] {
-  const subjects: ConnectTokenSubject[] = [
-    { type: "user", id: userId, issuer: CONNECT_USER_ISSUER },
-    { type: "user", id: userId },
-  ];
-
-  const authUrl = process.env.BETTER_AUTH_URL?.trim();
-  if (authUrl) {
-    subjects.push({ type: "user", id: userId, issuer: authUrl });
-  }
-
-  return subjects;
+/**
+ * The one subject this app mints tokens under. `appSession()` in
+ * `agent/channels/eve.ts` authenticates with the same issuer, so the agent and
+ * the web app address the exact same Connect grant.
+ */
+function userSubject(userId: string): ConnectTokenSubject {
+  return { type: "user", id: userId, issuer: CONNECT_USER_ISSUER };
 }
 
 function tokenParams(
@@ -113,34 +108,20 @@ function mapConnectError(error: unknown, def: ConnectorDef): ConnectorStatus {
   return { state: "error", message: "Unknown Connect error" };
 }
 
-async function withUserTokenResponse(
+function userTokenResponse(
   def: ConnectorDef,
   userId: string,
   installationId?: string,
 ) {
-  let lastError: unknown;
-
-  for (const subject of userSubjects(userId)) {
-    try {
-      return await getTokenResponse(
-        def.connector,
-        tokenParams(def, subject, installationId),
-      );
-    }
-    catch (error) {
-      lastError = error;
-      if (!isMissingGrantError(error)) {
-        throw error;
-      }
-    }
-  }
-
-  throw lastError;
+  return getTokenResponse(
+    def.connector,
+    tokenParams(def, userSubject(userId), installationId),
+  );
 }
 
 export async function probeStatus(def: ConnectorDef, userId: string): Promise<ConnectorStatus> {
   try {
-    const response = await withUserTokenResponse(def, userId);
+    const response = await userTokenResponse(def, userId);
 
     return {
       state: "connected",
@@ -158,7 +139,7 @@ export async function mintUserToken(
   userId: string,
   installationId?: string,
 ): Promise<string> {
-  const response = await withUserTokenResponse(def, userId, installationId);
+  const response = await userTokenResponse(def, userId, installationId);
   return response.token;
 }
 
@@ -169,7 +150,7 @@ export async function startConnectFlow(
 ) {
   return startAuthorization(
     def.connector,
-    tokenParams(def, userSubjects(userId)[0]!, undefined),
+    tokenParams(def, userSubject(userId), undefined),
     { callbackUrl },
   );
 }
@@ -195,25 +176,15 @@ export async function revokeConnection(
   userId: string,
   installationId?: string,
 ): Promise<void> {
-  let lastError: unknown;
-
-  for (const subject of userSubjects(userId)) {
-    try {
-      await revokeToken(def.connector, {
-        subject,
-        ...(installationId ? { installationId } : {}),
-      });
-      return;
-    }
-    catch (error) {
-      lastError = error;
-      if (!isMissingGrantError(error)) {
-        throw error;
-      }
-    }
+  try {
+    await revokeToken(def.connector, {
+      subject: userSubject(userId),
+      ...(installationId ? { installationId } : {}),
+    });
   }
-
-  if (lastError) {
-    throw lastError;
+  catch (error) {
+    if (!isMissingGrantError(error)) {
+      throw error;
+    }
   }
 }
