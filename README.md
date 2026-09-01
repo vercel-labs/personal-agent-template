@@ -130,7 +130,7 @@ Documents live in private Vercel Blob storage — attach a Blob store to the pro
 pnpm dev          # Nuxt + Eve (eve/nuxt module — see Eve docs)
 pnpm typecheck    # TypeScript check
 pnpm build        # Production build
-pnpm db:generate  # Generate Drizzle migrations
+pnpm db:generate  # Regenerate the auth schema, then the migration
 pnpm db:migrate   # Apply migrations
 ```
 

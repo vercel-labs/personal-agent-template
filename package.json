@@ -20,17 +20,19 @@
     "#*": "./agent/*"
   },
   "scripts": {
+    "postinstall": "nuxt prepare",
+    "dev": "nuxt prepare && nuxt dev",
     "build": "nuxt build",
-    "dev": "nuxt dev",
     "start": "nuxt preview",
     "typecheck": "nuxt typecheck && tsc -p tsconfig.agent.json",
-    "db:generate": "nuxt db generate",
+    "db:generate": "pnpm auth:schema && nuxt db generate",
     "db:migrate": "nuxt db migrate",
     "typecheck:app": "nuxt typecheck",
     "typecheck:agent": "tsc -p tsconfig.agent.json",
     "build:agent": "eve build",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "auth:schema": "npx auth@latest generate --config server/utils/auth.ts --output server/db/schema/auth.ts -y && eslint server/db/schema/auth.ts --fix"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.41",
@@ -60,6 +62,7 @@
     "@nuxt/eslint": "^1.17.0",
     "@types/node": "26.4.0",
     "eslint": "^10.9.1",
+    "microsandbox": "^0.6.15",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.11"
   }

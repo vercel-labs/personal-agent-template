@@ -28,6 +28,16 @@ export default defineNuxtConfig({
     "/api/integrations/**": { headers: privateNoStore },
     "/eve/v1/**": { headers: noStore },
   },
+  vite: {
+    optimizeDeps: {
+      // Client code imports `ai` for its UI part helpers. `ai` is already ESM,
+      // so Vite would serve it unbundled — and its @ai-sdk/gateway dependency
+      // imports @vercel/oidc, whose browser build is CommonJS and cannot
+      // provide named exports to the browser. Pre-bundling `ai` converts the
+      // whole chain to ESM.
+      include: ["ai"],
+    },
+  },
   nitro: {
     compressPublicAssets: true,
     prerender: {

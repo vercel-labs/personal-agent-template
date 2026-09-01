@@ -7,12 +7,13 @@ Durable personal AI assistant built with Eve and Nuxt.
 | Command | Description |
 |---------|-------------|
 | `pnpm install` | Install dependencies |
-| `pnpm dev` | Start Nuxt + Eve dev server |
+| `pnpm dev` | Generate Nuxt types, then start Nuxt + Eve |
 | `pnpm build` | Production build |
 | `pnpm lint` | ESLint (`pnpm lint:fix` to autofix) |
 | `pnpm typecheck` | TypeScript check — app/server/shared plus `agent/` |
 | `pnpm build:agent` | Build the Eve agent on its own |
-| `pnpm db:generate` | Generate Drizzle migrations |
+| `pnpm auth:schema` | Regenerate the Better Auth Drizzle schema |
+| `pnpm db:generate` | Regenerate the auth schema, then the Drizzle migration |
 | `pnpm db:migrate` | Apply migrations |
 
 ## Structure
