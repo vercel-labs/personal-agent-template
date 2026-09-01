@@ -13,10 +13,11 @@ flowchart TB
   subgraph surfaces [User surfaces]
     web[Web chat — Nuxt]
     slack[Slack DMs and mentions]
+    imessage[iMessage — Photon]
   end
 
   subgraph eve [Eve agent — agent/]
-    channels[Channels: eve · slack]
+    channels[Channels: eve · slack · photon]
     tools[Tools: weather · github]
     skills[Skills · memory · connections: Linear MCP]
   end
@@ -28,7 +29,7 @@ flowchart TB
     db[(NuxtHub SQLite — Drizzle)]
   end
 
-  connect[Vercel Connect — Linear · Slack]
+  connect[Vercel Connect — GitHub · Linear · Slack · Photon]
 
   surfaces --> eve
   eve -->|"HTTP + Bearer INTERNAL_API_SECRET"| nuxt
@@ -51,13 +52,13 @@ The `eve/nuxt` module generates the Vercel service and its `/eve/v1/*` route at 
 personal-agent-template/
 ├── agent/                    # Eve agent
 │   ├── agent.ts              # Model and agent config
-│   ├── channels/             # eve (web), slack
+│   ├── channels/             # eve (web), slack, photon (iMessage)
 │   ├── tools/                # weather
 │   ├── extensions/           # mounted eve extensions (github)
 │   ├── memory/               # memory slots (profile)
 │   ├── skills/               # e.g. daily-summary.md
 │   ├── connections/          # Linear MCP
-│   ├── lib/                  # profile-internal, slack-internal, internal-api
+│   ├── lib/                  # profile-internal, slack-internal, phone-internal, internal-api
 │   └── instructions.ts       # system instructions
 ├── app/                      # Nuxt frontend
 │   ├── pages/                # chat, settings, login
@@ -134,7 +135,7 @@ Key tables:
 | `user` / `session` / `account` | Better Auth |
 | `threads` | Chat threads |
 | `user_profile` | Name, timezone, phone |
-| `phone_links` | Phone ↔ app user mapping (reserved for a messaging channel) |
+| `phone_links` | Phone ↔ app user mapping, used by the iMessage channel |
 | `slack_links` | Slack ↔ app user mapping |
 | `slack_link_codes` | Temporary link codes |
 

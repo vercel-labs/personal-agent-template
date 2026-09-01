@@ -6,7 +6,7 @@ import {
   type SlackContext,
   type SlackMessage,
 } from "eve/channels/slack";
-import { buildAppSessionAuth } from "../../shared/slack-auth";
+import { buildAppSessionAuth } from "../../shared/app-auth";
 import {
   consumeSlackLinkCodeRemote,
   fetchSlackLinkForMember,

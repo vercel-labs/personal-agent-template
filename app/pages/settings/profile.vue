@@ -128,7 +128,7 @@ function resetForm() {
 
             <SettingsRow
               label="Phone"
-              description="Your E.164 number, stored for a future messaging channel."
+              description="Your E.164 number, so V recognises you when you text it."
             >
               <ProfilePhoneInput
                 v-model="form.phoneNumber"

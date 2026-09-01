@@ -142,9 +142,15 @@ credentials: connectSlackCredentials("slack/your-slug"),
 
 Slack linking uses the internal API — `INTERNAL_API_SECRET` must be set.
 
-### Phone number (profile)
+### iMessage (Photon)
 
-Users add an E.164 number on **Profile**, stored in `phone_links`. No channel consumes it today — it is the hook a messaging channel (Linq, Sendblue, Twilio) would authenticate inbound senders against.
+`eve add channel/photon-imessage` walks through the Photon project, the agent's
+phone number and the Vercel Connect connector. Put the connector slug it prints
+into [`agent/channels/photon.ts`](../agent/channels/photon.ts).
+
+Inbound senders are recognised by the E.164 number they set on **Profile**,
+stored in `phone_links`. A number nobody claimed still gets an answer, without
+the caller's memory or integrations.
 
 ## 7. Theme the UI
 
