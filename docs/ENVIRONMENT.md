@@ -72,6 +72,7 @@ Shared bearer token between the Eve agent service and the Nuxt internal API (`/a
 
 Used for:
 
+- Caller identity for the agent's session instructions
 - Slack account linking
 - Phone linking lookup
 

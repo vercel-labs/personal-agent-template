@@ -57,7 +57,7 @@ personal-agent-template/
 │   ├── memory/               # memory slots (profile)
 │   ├── skills/               # e.g. daily-summary.md
 │   ├── connections/          # Linear MCP
-│   ├── lib/                  # slack-internal, internal-api
+│   ├── lib/                  # profile-internal, slack-internal, internal-api
 │   └── instructions.ts       # system instructions
 ├── app/                      # Nuxt frontend
 │   ├── pages/                # chat, settings, login
@@ -116,6 +116,7 @@ Validated in [`server/utils/internal-api.ts`](../server/utils/internal-api.ts).
 
 | Route | Purpose |
 |-------|---------|
+| `GET /api/internal/profile` | Caller identity for the session instructions |
 | `GET /api/internal/phone/link` | Resolve phone number → app user |
 | `GET /api/internal/slack/link/member` | Resolve Slack user → app user |
 | `POST /api/internal/slack/link/consume` | Consume link code |

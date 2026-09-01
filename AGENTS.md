@@ -52,6 +52,11 @@ Authenticated with `Authorization: Bearer <INTERNAL_API_SECRET>`. See [`server/u
 
 ## Memory
 
+The caller's account identity — name, timezone, locale, bio — is injected into
+the session instructions by [`agent/instructions.ts`](agent/instructions.ts),
+read over the internal API. That is app data the Profile page owns, distinct
+from the memory slot below, which holds what the agent chooses to remember.
+
 Eve's `fileMemory()` provider, bound in [`agent/memory/profile.ts`](agent/memory/profile.ts)
 and scoped per principal. Documents live in private Vercel Blob storage; the
 agent maintains them with `profile__save_memory` and `profile__remove_memory`.
