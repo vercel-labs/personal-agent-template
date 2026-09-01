@@ -37,10 +37,7 @@ export function createEveChatSession(
 ): ChatSession {
   const id = computed(() => toValue(chatId));
   const resolvedOptions = computed(() => toValue(options));
-  const agent = computed(() => getOrCreateEveAgent(id.value, {
-    initialSession: resolvedOptions.value?.initialSession,
-    initialEvents: resolvedOptions.value?.initialEvents,
-  }));
+  const agent = computed(() => getOrCreateEveAgent(id.value, resolvedOptions.value));
 
   const messages = computed(() => toUIMessages(agent.value.data.value.messages));
 

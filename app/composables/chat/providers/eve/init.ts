@@ -1,7 +1,7 @@
 import type { EveMessageData, UseEveAgentReturn } from "eve/vue";
 import type { ChatSessionOptions } from "~/composables/chat/types";
 import { recordAuthorizationEvent } from "~/composables/chat/useAuthorizationChallenges";
-import { persistThreadState } from "./thread-state";
+import { persistThreadSession } from "./thread-session";
 import { recordStreamEvent } from "./stream-log";
 
 const agentsByChatId = new Map<string, UseEveAgentReturn<EveMessageData>>();
@@ -9,11 +9,17 @@ const agentsByChatId = new Map<string, UseEveAgentReturn<EveMessageData>>();
 export function getOrCreateEveAgent(chatId: string, options?: ChatSessionOptions) {
   let agent = agentsByChatId.get(chatId);
   if (!agent) {
+    const knownSessionId = options?.initialSession?.sessionId;
+
     agent = useEveAgent({
       initialSession: options?.initialSession,
-      initialEvents: options?.initialEvents,
-      onFinish: (snapshot) => {
-        void persistThreadState(chatId, snapshot);
+      resume: options?.resume,
+      onSessionChange: (session) => {
+        // eve mints the session on the first message. Bind it to the thread
+        // once; every later turn reuses the same id.
+        if (session && session.sessionId !== knownSessionId) {
+          void persistThreadSession(chatId, session.sessionId);
+        }
       },
       onEvent: (event) => {
         if (event.type === "authorization.required" || event.type === "authorization.completed") {

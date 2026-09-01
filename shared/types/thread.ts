@@ -5,22 +5,14 @@ export interface ThreadSummary {
   createdAt: number;
 }
 
-/**
- * Durable session cursor. Mirrors eve's `ClientSessionState`: since eve 0.31
- * sessions are ID-addressed and continuation tokens no longer exist.
- */
-export interface EveSessionCursor {
-  sessionId: string;
-  streamIndex: number;
-}
-
-export interface ThreadState {
-  session: EveSessionCursor;
-  events: unknown[];
-}
-
 export interface ThreadRecord extends ThreadSummary {
-  state: ThreadState | null;
+  /**
+   * The eve session backing this thread, or `null` before its first message.
+   *
+   * eve owns the transcript. The client replays it from the durable session
+   * stream, so the app stores the identifier and nothing else.
+   */
+  sessionId: string | null;
 }
 
 export function truncateThreadTitle(text: string, maxLength = 60): string {

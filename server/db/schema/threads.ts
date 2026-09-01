@@ -8,7 +8,11 @@ export const threads = sqliteTable("threads", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
-  state: text("state"),
+  /**
+   * The eve session this thread talks to. eve owns the transcript: the client
+   * replays it from the durable stream on load, so nothing is mirrored here.
+   */
+  sessionId: text("session_id"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),

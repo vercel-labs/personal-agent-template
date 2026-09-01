@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ThreadRecord } from "#shared/types/thread";
-import { resumeOptionsFromThread } from "~/composables/chat/providers/eve/thread-state";
+import { resumeOptionsFromThread } from "~/composables/chat/providers/eve/thread-session";
 import { useChatNavigation, refreshThreadList } from "~/composables/chat/navigation";
 import { useAuthorizationChallenges } from "~/composables/chat/useAuthorizationChallenges";
 import { useStreamLog } from "~/composables/chat/providers/eve/stream-log";
