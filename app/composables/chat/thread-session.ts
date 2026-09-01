@@ -1,9 +1,11 @@
+import type { EveMessageData, UseEveAgentOptions } from "eve/vue";
 import type { ThreadRecord } from "#shared/types/thread";
-import type { ChatSessionOptions } from "~/composables/chat/types";
 import { refreshThreadList } from "~/composables/chat/navigation";
 
+type ResumeOptions = Pick<UseEveAgentOptions<EveMessageData>, "initialSession" | "resume">;
+
 /** Replay a thread's durable session from its start. */
-export function resumeOptionsFromThread(thread: ThreadRecord): ChatSessionOptions {
+export function resumeOptionsFromThread(thread: ThreadRecord): ResumeOptions {
   if (!thread.sessionId) {
     return {};
   }

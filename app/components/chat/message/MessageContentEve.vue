@@ -10,7 +10,7 @@ import type { UIMessage } from "ai";
 import type { EveDynamicToolPart } from "eve/vue";
 import { isPartStreaming, isToolStreaming } from "@nuxt/ui/utils/ai";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
-import type { ChatStatus } from "~/composables/chat/types";
+import type { ChatStatus } from "~/composables/chat/useChatSession";
 import { getMergedParts } from "~/utils/chat/ai";
 import { hasVisibleParts, getToolDisplayName, getToolNamespace, normalizeEveParts, shouldShowToolInput } from "~/utils/chat/eve";
 import type { WeatherUIToolInvocation } from "~~/shared/utils/tools/weather";

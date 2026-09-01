@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ChatStatus } from "~/composables/chat/types";
-import { useStreamLog } from "~/composables/chat/providers/eve/stream-log";
+import type { ChatStatus } from "~/composables/chat/useChatSession";
+import { useStreamLog } from "~/composables/chat/stream-log";
 
 const props = defineProps<{
   status: ChatStatus;
