@@ -12,6 +12,8 @@ export interface ChatSessionOptions {
 
 export interface ChatSession {
   messages: ComputedRef<UIMessage[]>;
+  /** Text accepted by the prompt while the session finishes replaying. */
+  pendingMessage: ComputedRef<string | undefined>;
   status: Ref<ChatStatus> | ComputedRef<ChatStatus>;
   error: Ref<Error | undefined> | ComputedRef<Error | undefined>;
   isBusy: ComputedRef<boolean>;

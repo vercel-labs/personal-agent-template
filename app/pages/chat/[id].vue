@@ -36,6 +36,7 @@ const thread = computed(() => data.value!.thread);
 
 const {
   messages,
+  pendingMessage,
   status,
   error: chatError,
   isBusy,
@@ -136,6 +137,15 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
               />
             </template>
           </UChatMessages>
+
+          <div
+            v-if="pendingMessage"
+            class="flex justify-end"
+          >
+            <p class="max-w-[75%] rounded-lg bg-elevated px-3 py-2 text-sm whitespace-pre-wrap opacity-60">
+              {{ pendingMessage }}
+            </p>
+          </div>
 
           <div
             v-if="pendingChallenges.length || failedChallenges.length"

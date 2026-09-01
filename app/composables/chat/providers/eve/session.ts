@@ -1,6 +1,6 @@
 import type { EveMessageData, UseEveAgentStatus } from "eve/vue";
 import type { MaybeRefOrGetter } from "vue";
-import { computed, toValue, watch } from "vue";
+import { computed, ref, toValue, watch } from "vue";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import type { ChatSession, ChatSessionOptions, ChatStatus } from "~/composables/chat/types";
 import { toUIMessages } from "./adapter";
@@ -41,7 +41,16 @@ export function createEveChatSession(
 
   const messages = computed(() => toUIMessages(agent.value.data.value.messages));
 
-  const status = computed(() => toChatStatus(agent.value.status.value));
+  // A send issued while the session is still replaying waits its turn. Report
+  // it as in flight so the prompt shows the turn was accepted instead of going
+  // silent for as long as the replay takes.
+  const queuedSend = ref(false);
+  const queuedText = ref<string>();
+
+  const status = computed(() => {
+    if (queuedSend.value) return "submitted";
+    return toChatStatus(agent.value.status.value);
+  });
   const error = computed(() => {
     const transport = agent.value.error.value;
     if (transport) return transport;
@@ -59,25 +68,33 @@ export function createEveChatSession(
    * rather than dropping the message: the prompt stays usable and the turn
    * goes as soon as the replay finishes.
    */
-  function whenSendable() {
+  async function whenSendable(text?: string) {
     if (agent.value.status.value !== "resuming") {
-      return Promise.resolve();
+      return;
     }
 
-    return new Promise<void>((resolve) => {
-      const stop = watch(agent.value.status, (value) => {
-        if (value === "resuming") return;
-        stop();
-        resolve();
+    queuedSend.value = true;
+    queuedText.value = text;
+    try {
+      await new Promise<void>((resolve) => {
+        const stop = watch(agent.value.status, (value) => {
+          if (value === "resuming") return;
+          stop();
+          resolve();
+        });
       });
-    });
+    }
+    finally {
+      queuedSend.value = false;
+      queuedText.value = undefined;
+    }
   }
 
   async function sendMessage(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
     clearTurnFailure(id.value);
-    await whenSendable();
+    await whenSendable(trimmed);
     await agent.value.send(trimmed);
   }
 
@@ -108,6 +125,7 @@ export function createEveChatSession(
 
   return {
     messages,
+    pendingMessage: computed(() => queuedText.value),
     status,
     error,
     isBusy,
