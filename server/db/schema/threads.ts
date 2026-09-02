@@ -1,8 +1,8 @@
-import { relations, sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
+import { index, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 
-export const threads = sqliteTable("threads", {
+export const threads = pgTable("threads", {
   id: text("id").primaryKey(),
   userId: text("user_id")
     .notNull()
@@ -10,11 +10,9 @@ export const threads = sqliteTable("threads", {
   title: text("title").notNull(),
   /** The eve session this thread talks to. eve holds the transcript. */
   sessionId: text("session_id"),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at")
+    .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),
 }, (table) => [

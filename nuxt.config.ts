@@ -76,7 +76,13 @@ export default defineNuxtConfig({
   },
 
   hub: {
-    db: "sqlite",
+    // Pinned rather than auto-detected: without a URL the module falls back to
+    // pglite, whose WASM payload does not survive eve's agent bundling. Pinning
+    // turns that into a build-time error naming the missing DATABASE_URL.
+    db: {
+      dialect: "postgresql",
+      driver: "postgres-js",
+    },
   },
   runtimeConfig: {
     betterAuthSecret: process.env.BETTER_AUTH_SECRET,

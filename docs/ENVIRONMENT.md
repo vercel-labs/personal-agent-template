@@ -16,30 +16,47 @@ cp .env.example .env
 | `BETTER_AUTH_URL` | `http://localhost:3000` locally, or your production URL |
 | `INTERNAL_API_SECRET` | Run `openssl rand -base64 32` (must match on web + eve services) |
 
-These three variables are enough for local development. On Vercel, set them on **both** the `web` and `eve` services — and add a database (see below).
+On Vercel, set them on **both** the `web` and `eve` services — and add a database (see below).
 
 ## Database
 
-### `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` (required on Vercel)
+### `DATABASE_URL` (required everywhere)
 
-Locally, NuxtHub (`hub.db: "sqlite"`) uses a SQLite file at `.data/db/sqlite.db`, so no configuration is needed. On Vercel (or any serverless host) that local file cannot be created — without a hosted database every request fails with:
+NuxtHub is pinned to PostgreSQL with the `postgres-js` driver, so a database is
+required in development too — there is no local file fallback. Without it every
+command that loads Nuxt stops with:
 
 ```
-Error: ConnectionFailed("Unable to open connection to local database .../.data/db/sqlite.db: 14")
+postgres-js driver requires DATABASE_URL, POSTGRES_URL, or POSTGRESQL_URL
+environment variable when applyMigrationsDuringBuild is enabled
 ```
 
-Provision a [Turso database from the Vercel Marketplace](https://vercel.com/marketplace/tursocloud) — the Deploy button in the README includes it automatically, or add it to an existing project:
+Provision [Neon from the Vercel Marketplace](https://vercel.com/marketplace/neon) — the
+Deploy button in the README includes it — or add it to an existing project:
 
 ```bash
-vercel integration add turso
+vercel integration add neon
 ```
 
-This sets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the project. NuxtHub detects them at **build time** and switches from the local file to the remote libSQL database, so redeploy after adding them. Then apply the schema:
+The integration sets `DATABASE_URL` on Production and Preview. Add it to
+**Development** as well (a separate Neon branch keeps local work off the
+deployed data), then pull it locally:
 
 ```bash
-vercel env pull .env --yes
+vercel env pull
+```
+
+Migrations in [`server/db/migrations/postgresql/`](../server/db/migrations/postgresql/)
+are applied at build time, and on `pnpm dev`. To apply them by hand:
+
+```bash
 pnpm db:migrate
 ```
+
+The driver is pinned in [`nuxt.config.ts`](../nuxt.config.ts) rather than
+auto-detected. Left to itself, NuxtHub falls back to `pglite` when no URL is
+set, and pglite's WebAssembly payload does not survive the bundling eve does to
+run the agent — the failure surfaces much later as a missing `pglite.data`.
 
 ### `NUXT_PUBLIC_SITE_URL` (optional)
 
@@ -116,12 +133,16 @@ These paths are gitignored and should never be committed:
 | Path | Purpose |
 |------|---------|
 | `.env` | Local secrets |
-| `.data/` | SQLite database (NuxtHub) |
+| `.data/` | NuxtHub local state |
 | `.eve/` | Eve dev cache |
 | `.vercel/` | Vercel CLI link metadata |
 
-Reset the local database:
+Reset the database — destructive, it drops every table:
 
 ```bash
-rm -rf .data/db && pnpm db:migrate
+psql "$DATABASE_URL" -c 'drop schema public cascade; create schema public;'
+pnpm db:migrate
 ```
+
+Pointing `DATABASE_URL` at a fresh Neon branch does the same without dropping
+anything.

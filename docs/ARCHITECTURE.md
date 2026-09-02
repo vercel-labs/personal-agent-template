@@ -26,7 +26,7 @@ flowchart TB
     api["/api/* — public API"]
     internal["/api/internal — agent-only"]
     auth[Better Auth]
-    db[(NuxtHub SQLite — Drizzle)]
+    db[(NuxtHub PostgreSQL — Drizzle)]
   end
 
   connect[Vercel Connect — GitHub · Linear · Slack · Photon]
@@ -126,7 +126,7 @@ Agent-side clients live in `agent/lib/*-internal.ts`.
 
 ## Database
 
-SQLite via [NuxtHub](https://hub.nuxt.com). Schema in [`server/db/schema/`](../server/db/schema/).
+PostgreSQL via [NuxtHub](https://hub.nuxt.com), `postgres-js` driver. Schema in [`server/db/schema/`](../server/db/schema/).
 
 Key tables:
 
