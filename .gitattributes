@@ -1,0 +1,6 @@
+# Collapsed in GitHub diffs and excluded from language stats. These are written
+# by a tool and reviewed by running it, not by reading them.
+pnpm-lock.yaml linguist-generated=true
+server/db/migrations/**/meta/** linguist-generated=true
+
+# The migration SQL itself stays visible: it is the schema contract.

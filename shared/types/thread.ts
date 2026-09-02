@@ -5,19 +5,9 @@ export interface ThreadSummary {
   createdAt: number;
 }
 
-export interface EveSessionCursor {
-  sessionId?: string;
-  continuationToken?: string;
-  streamIndex: number;
-}
-
-export interface ThreadState {
-  session: EveSessionCursor;
-  events: unknown[];
-}
-
 export interface ThreadRecord extends ThreadSummary {
-  state: ThreadState | null;
+  /** The eve session backing this thread, or `null` before its first message. */
+  sessionId: string | null;
 }
 
 export function truncateThreadTitle(text: string, maxLength = 60): string {

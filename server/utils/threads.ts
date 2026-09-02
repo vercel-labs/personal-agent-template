@@ -1,40 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@nuxthub/db";
-import type { ThreadRecord, ThreadState, ThreadSummary } from "#shared/types/thread";
+import type { ThreadRecord, ThreadSummary } from "#shared/types/thread";
 import { truncateThreadTitle } from "#shared/types/thread";
 
 const LIST_LIMIT = 50;
-
-function parseThreadState(value: string | null): ThreadState | null {
-  if (!value) return null;
-  try {
-    const parsed = JSON.parse(value) as ThreadState;
-    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.events)) {
-      return null;
-    }
-    return parsed;
-  }
-  catch {
-    return null;
-  }
-}
-
-function serializeThreadState(state: ThreadState | undefined) {
-  return state ? JSON.stringify(state) : null;
-}
-
-function mergeThreadState(existing: ThreadState | null, incoming: ThreadState): ThreadState {
-  const session = incoming.session;
-
-  return {
-    session: {
-      sessionId: session.sessionId ?? existing?.session.sessionId,
-      continuationToken: session.continuationToken ?? existing?.session.continuationToken,
-      streamIndex: session.streamIndex,
-    },
-    events: incoming.events,
-  };
-}
 
 function rowToSummary(row: typeof schema.threads.$inferSelect): ThreadSummary {
   return {
@@ -48,7 +17,7 @@ function rowToSummary(row: typeof schema.threads.$inferSelect): ThreadSummary {
 function rowToRecord(row: typeof schema.threads.$inferSelect): ThreadRecord {
   return {
     ...rowToSummary(row),
-    state: parseThreadState(row.state),
+    sessionId: row.sessionId,
   };
 }
 
@@ -103,7 +72,7 @@ export async function updateThreadForUser(
   id: string,
   patch: {
     title?: string;
-    state?: ThreadState;
+    sessionId?: string;
   },
 ) {
   const existing = await getThreadForUser(userId, id);
@@ -115,9 +84,7 @@ export async function updateThreadForUser(
     .set({
       updatedAt: new Date(),
       ...(patch.title !== undefined ? { title: truncateThreadTitle(patch.title) } : {}),
-      ...(patch.state !== undefined
-        ? { state: serializeThreadState(mergeThreadState(existing.state, patch.state)) }
-        : {}),
+      ...(patch.sessionId !== undefined ? { sessionId: patch.sessionId } : {}),
     })
     .where(and(
       eq(schema.threads.id, id),

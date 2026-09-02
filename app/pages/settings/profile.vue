@@ -2,7 +2,6 @@
 import { authClient } from "~/lib/auth-client";
 
 const { profile, pending, saveProfile, timezones, locales } = useProfile();
-const { memory, pending: memoryPending } = useMemory();
 
 const form = reactive({
   name: "",
@@ -73,7 +72,7 @@ function resetForm() {
     :ui="{ body: 'p-0 sm:p-0' }"
   >
     <template #header>
-      <Navbar />
+      <AppNavbar />
     </template>
 
     <template #body>
@@ -83,7 +82,7 @@ function resetForm() {
             Settings
           </h1>
           <p class="max-w-lg text-sm text-muted">
-            Manage your identity, memory, and integrations.
+            Manage your identity and integrations.
           </p>
         </header>
 
@@ -129,7 +128,7 @@ function resetForm() {
 
             <SettingsRow
               label="Phone"
-              description="Your E.164 number for iMessage linking via Sendblue."
+              description="Your E.164 number, so V recognises you when you text it."
             >
               <ProfilePhoneInput
                 v-model="form.phoneNumber"
@@ -193,12 +192,6 @@ function resetForm() {
             </SettingsRow>
           </SettingsSection>
         </form>
-
-        <ProfileMemorySection
-          class="mt-8"
-          :memory="memory"
-          :pending="memoryPending"
-        />
       </div>
     </template>
 

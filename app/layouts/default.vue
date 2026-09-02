@@ -59,7 +59,7 @@ defineShortcuts({
           class="flex items-center min-w-0"
           :class="collapsed ? 'mx-auto' : 'px-2.5'"
         >
-          <Logo class="h-5 w-auto shrink-0 text-highlighted" />
+          <AppLogo class="h-5 w-auto shrink-0 text-highlighted" />
         </NuxtLink>
 
         <UDashboardSidebarCollapse

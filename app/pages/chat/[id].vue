@@ -1,26 +1,21 @@
 <script setup lang="ts">
 import type { ThreadRecord } from "#shared/types/thread";
-import { resumeOptionsFromThread } from "~/composables/chat/providers/eve/thread-state";
 import { useChatNavigation, refreshThreadList } from "~/composables/chat/navigation";
 import { useAuthorizationChallenges } from "~/composables/chat/useAuthorizationChallenges";
-import { useStreamLog } from "~/composables/chat/providers/eve/stream-log";
+import { useStreamLog } from "~/composables/chat/stream-log";
 import { useChatSession } from "~/composables/chat/useChatSession";
 
 const route = useRoute();
 const chatId = computed(() => route.params.id as string);
 
-interface ThreadPageData {
-  thread: ThreadRecord;
-  resume: ReturnType<typeof resumeOptionsFromThread>;
-}
+// Fetched during the server render too, so the thread's durable session id is
+// known before the chat session binds to it.
+const requestFetch = useRequestFetch();
 
 const { data, error, pending: resumePending } = await useAsyncData(
   () => `thread-${chatId.value}`,
-  async (): Promise<ThreadPageData> => {
-    const { thread } = await $fetch<{ thread: ThreadRecord }>(`/api/threads/${chatId.value}`);
-    return { thread, resume: resumeOptionsFromThread(thread) };
-  },
-  { watch: [chatId], server: false, ...payloadCacheOptions },
+  () => requestFetch<{ thread: ThreadRecord }>(`/api/threads/${chatId.value}`),
+  { watch: [chatId] },
 );
 
 if (error.value || !data.value?.thread) {
@@ -34,11 +29,11 @@ const {
   status,
   error: chatError,
   isBusy,
-  sendMessage,
-  sendInputResponses,
-  stop,
+  send,
+  respond,
+  cancel,
   retry,
-} = useChatSession(chatId, () => data.value?.resume ?? {});
+} = useChatSession(thread.value);
 
 const { consumePendingOnMount } = useChatNavigation(chatId);
 const { resetTurnEventCounts } = useStreamLog();
@@ -64,7 +59,7 @@ onMounted(() => {
     onUnmounted(() => window.removeEventListener("focus", onFocus));
   }
 
-  consumePendingOnMount(sendMessage);
+  consumePendingOnMount(send);
 });
 
 function handleSubmit(e: Event) {
@@ -72,11 +67,11 @@ function handleSubmit(e: Event) {
   const text = input.value.trim();
   if (!text || isBusy.value) return;
   input.value = "";
-  void sendMessage(text);
+  void send(text);
 }
 
-function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0]) {
-  void sendInputResponses(responses);
+function handleInputResponses(responses: Parameters<typeof respond>[0]) {
+  void respond(responses);
 }
 </script>
 
@@ -87,13 +82,13 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
     :ui="{ body: 'p-0 sm:p-0 overscroll-none' }"
   >
     <template #header>
-      <Navbar>
+      <AppNavbar>
         <template #title>
           <p class="truncate text-sm font-medium text-highlighted">
             {{ thread.title }}
           </p>
         </template>
-      </Navbar>
+      </AppNavbar>
     </template>
 
     <template #body>
@@ -164,7 +159,7 @@ function handleInputResponses(responses: Parameters<typeof sendInputResponses>[0
                 :status="status"
                 color="neutral"
                 size="sm"
-                @stop="stop()"
+                @stop="cancel()"
                 @reload="retry()"
               />
             </template>

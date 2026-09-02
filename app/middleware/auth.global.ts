@@ -1,15 +1,12 @@
-import { authClient } from "~/lib/auth-client";
-
 export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === "/login") {
     return;
   }
 
-  const { data: session } = await authClient.getSession({
-    fetchOptions: {
-      headers: useRequestHeaders(["cookie"]) as HeadersInit,
-    },
-  });
+  // Goes through Nitro in-process during SSR, so it needs no absolute origin and
+  // is not stopped by deployment protection the way a self-addressed HTTP call is.
+  const session = await useRequestFetch()("/api/auth/get-session")
+    .catch(() => null);
 
   if (!session) {
     return navigateTo({

@@ -10,8 +10,27 @@ permissions:
   contents: read
 
 jobs:
-  typecheck:
+  verify:
     runs-on: ubuntu-latest
+
+    # NuxtHub resolves the database at config time and applies migrations during
+    # `nuxt build`, so lint, typecheck and build all need a reachable Postgres.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
     steps:
       - uses: actions/checkout@v6
 
@@ -23,4 +42,18 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      # Covers app/, server/ and shared/ (nuxt typecheck) plus agent/ (tsc).
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build web
+        run: pnpm build
+
+      # nuxt build only generates the eve service on Vercel, so build the
+      # agent explicitly here.
+      - name: Build agent
+        run: pnpm build:agent

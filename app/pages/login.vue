@@ -160,7 +160,7 @@ async function handleSubmit() {
           class="text-highlighted transition-opacity hover:opacity-80"
           aria-label="Eve on Vercel"
         >
-          <Logo class="h-[18px] w-auto text-highlighted" />
+          <AppLogo class="h-[18px] w-auto text-highlighted" />
         </NuxtLink>
 
         <UColorModeButton

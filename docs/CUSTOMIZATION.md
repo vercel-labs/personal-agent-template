@@ -38,7 +38,7 @@ This name appears in the navbar, settings, and integration cards.
 
 ### Persona and behavior
 
-Edit [`agent/lib/base-instructions.ts`](../agent/lib/base-instructions.ts) — system prompt, tone, tool usage rules, memory behavior.
+Edit [`agent/instructions.ts`](../agent/instructions.ts) — system prompt, tone, tool usage rules, memory behavior.
 
 Search the codebase for `V` to update remaining UI copy in Vue components.
 
@@ -52,27 +52,36 @@ Edit [`agent/agent.ts`](../agent/agent.ts):
 
 ```typescript
 export default defineAgent({
-  model: "anthropic/claude-sonnet-4.6", // change provider/model
+  model: "anthropic/claude-sonnet-5", // change provider/model
   // ...
 });
 ```
 
 See Eve docs for supported models and provider options.
 
-## 3. Memory categories
+## 3. Memory
 
-Categories are defined in [`shared/types/memory.ts`](../shared/types/memory.ts):
+The `profile` slot binds Eve's `fileMemory()` provider to one document per
+principal — [`agent/memory/profile.ts`](../agent/memory/profile.ts):
 
-- `MEMORY_CATEGORIES` — enum values
-- `MEMORY_CATEGORY_LABELS` — UI labels
-- `MEMORY_CATEGORY_HEADERS` — import parser aliases
+```typescript
+export default defineMemory({
+  description: "Stable facts and preferences about the person you are talking to.",
+  provider: fileMemory(),
+  scope: byPrincipal,
+});
+```
 
-If you add or rename categories, also update:
+- `description` is prepended to both memory tool descriptions, so it is how you
+  tell the model what belongs in this slot.
+- `scope` decides who shares a document. `byPrincipal` gives one per
+  authenticated caller; pass your own resolver for a tenant or workspace scope.
+- `fileMemory({ maxCharacters })` caps the recalled message. It defaults to
+  4,000 characters and rejects rather than truncates.
+- Add `agent/memory/<slot>.ts` for a second, independent slot.
 
-- [`shared/memory/export-prompt.ts`](../shared/memory/export-prompt.ts) — ChatGPT export prompt
-- [`agent/tools/save_memory.ts`](../agent/tools/save_memory.ts) — imports categories from shared types
-
-Each category stores **one prose block**. Saves replace the entire block, not partial deltas.
+See the [Eve memory guide](https://eve.dev/docs/memory) for backends and custom
+providers.
 
 ## 4. Add a tool
 
@@ -81,7 +90,7 @@ Each category stores **one prose block**. Saves replace the entire block, not pa
 3. Add a UI component in `app/components/chat/tool/` if the tool needs custom rendering
 4. Wire the component in [`app/components/chat/message/MessageContentEve.vue`](../app/components/chat/message/MessageContentEve.vue)
 
-See existing tools: [`agent/tools/weather.ts`](../agent/tools/weather.ts), [`agent/tools/save_memory.ts`](../agent/tools/save_memory.ts).
+See [`agent/tools/weather.ts`](../agent/tools/weather.ts) for a worked example.
 
 ## 5. Add a skill
 
@@ -91,7 +100,14 @@ Skills are markdown files in [`agent/skills/`](../agent/skills/). See [`daily-su
 
 ### GitHub
 
-Uses Vercel Connect OAuth and [@github-tools/sdk/eve](https://github-tools.com/frameworks/eve). Connector UID: [`shared/connect.ts`](../shared/connect.ts) (`GITHUB_CONNECTOR`), registry: [`server/connectors.ts`](../server/connectors.ts), tools: [`agent/tools/github.ts`](../agent/tools/github.ts).
+Uses Vercel Connect OAuth and the [@github-tools/eve-extension](https://github-tools.com/frameworks/eve) mount. Connector UID: [`shared/connect.ts`](../shared/connect.ts) (`GITHUB_CONNECTOR`), registry: [`server/connectors.ts`](../server/connectors.ts), mount: [`agent/extensions/github.ts`](../agent/extensions/github.ts).
+
+The mount filename is the namespace, so tools reach the model as `github__listPullRequests`, `github__createIssue`, and so on. Narrow the catalog with `preset`, `include` and `exclude`, and set per-tool approval with `requireApproval`.
+
+`connect.subject` resolves per caller, so each user reaches GitHub through their
+own Connect grant. Leave it out and the extension mints `{ type: "app" }` — the
+project's own installation — which every signed-in user would share whether or
+not they connected an account.
 
 1. Create a GitHub connector in Vercel Connect:
 
@@ -126,22 +142,22 @@ credentials: connectSlackCredentials("slack/your-slug"),
 
 Slack linking uses the internal API — `INTERNAL_API_SECRET` must be set.
 
-### Sendblue (iMessage)
+Follow-ups in a thread the agent is already answering do not need another
+mention. That relies on Slack sending plain message events: open **Advanced**
+on the connector and add the `message.channels` trigger event and the
+`channels:history` bot scope (`message.groups` and `groups:history` for private
+channels). Without them nothing breaks — Slack simply never sends the event, and
+mentions keep working. Inbound file attachments additionally need `files:read`.
 
-Reach the agent over iMessage via [Sendblue](https://chat-sdk.dev/adapters/vendor-official/sendblue). Channel logic: [`agent/channels/sendblue.ts`](../agent/channels/sendblue.ts).
+### iMessage (Photon)
 
-1. Create a Sendblue account and copy API credentials + assigned number from the [dashboard](https://dashboard.sendblue.com) (or `@sendblue/cli`: `sendblue setup`, `sendblue show-keys`, `sendblue lines`)
-2. Set `SENDBLUE_*` env vars on the **eve** service — see [Environment](./ENVIRONMENT.md#sendblue-imessage-optional)
-3. Point the Sendblue receive webhook at `https://<your-domain>/_eve_internal/eve/eve/v1/sendblue/webhook`
-4. Users add their E.164 phone number in **Settings → Profile**, then message the Sendblue number from that phone
+`eve add channel/photon-imessage` walks through the Photon project, the agent's
+phone number and the Vercel Connect connector. Put the connector slug it prints
+into [`agent/channels/photon.ts`](../agent/channels/photon.ts).
 
-Phone linking uses the internal API (`GET /api/internal/phone/link`) — `INTERNAL_API_SECRET` must be set.
-
-Tool approvals (`save_memory`) and OAuth prompts are delivered as plain-text iMessage with a link to the web chat — there is no button UI on iMessage.
-
-### Phone number (profile)
-
-Users add an E.164 number on **Profile**. Required for Sendblue/iMessage auth — the inbound sender number must match the linked profile phone.
+Inbound senders are recognised by the E.164 number they set on **Profile**,
+stored in `phone_links`. A number nobody claimed still gets an answer, without
+the caller's memory or integrations.
 
 ## 7. Theme the UI
 
@@ -153,6 +169,6 @@ Users add an E.164 number on **Profile**. Required for Sendblue/iMessage auth �
 
 See [Deploy on Vercel](../README.md#deploy-on-vercel) in the README. Remember:
 
-- Dual services: `web` + `eve` ([`vercel.json`](../vercel.json))
+- Dual services: `web` + `eve`, generated by the `eve/nuxt` module at build time
 - Same env vars on both services
 - Run migrations for production database

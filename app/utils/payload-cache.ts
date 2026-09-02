@@ -14,6 +14,8 @@ export const payloadCacheOptions = {
 
 export function clearCachedPayloadData(key: string, nuxtApp?: NuxtApp) {
   const app = nuxtApp ?? useNuxtApp();
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete app.payload.data[key];
+  // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
   delete app.static.data[key];
 }

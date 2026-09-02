@@ -6,7 +6,7 @@ import {
   type SlackContext,
   type SlackMessage,
 } from "eve/channels/slack";
-import { buildAppSessionAuth } from "../../shared/slack-auth";
+import { buildAppSessionAuth } from "../../shared/app-auth";
 import {
   consumeSlackLinkCodeRemote,
   fetchSlackLinkForMember,
@@ -80,7 +80,7 @@ async function tryHandleSlackLinkCommand(
 }
 
 async function resolveSlackInboundAuth(
-  slackAuth: ReturnType<typeof defaultSlackAuth>,
+  slackAuth: NonNullable<ReturnType<typeof defaultSlackAuth>>,
   member: {
     teamId?: string | null;
     userId: string;
@@ -184,6 +184,19 @@ export default slackChannel({
   },
 
   async onDirectMessage(ctx, message) {
+    return buildSlackTurn(ctx, message);
+  },
+
+  // Mentions and DMs are handled above; this covers every other message, so a
+  // thread the agent is already answering in keeps going without re-mentioning
+  // it. Needs the `message.channels` trigger and the `channels:history` scope
+  // on the connector — without them Slack never sends the event and this is
+  // simply never called.
+  async onMessage(ctx, message) {
+    if (message.author?.isBot || !(await ctx.isSubscribed())) {
+      return null;
+    }
+
     return buildSlackTurn(ctx, message);
   },
 });

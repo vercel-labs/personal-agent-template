@@ -16,30 +16,47 @@ cp .env.example .env
 | `BETTER_AUTH_URL` | `http://localhost:3000` locally, or your production URL |
 | `INTERNAL_API_SECRET` | Run `openssl rand -base64 32` (must match on web + eve services) |
 
-These three variables are enough for local development. On Vercel, set them on **both** the `web` and `eve` services — and add a database (see below).
+On Vercel, set them on **both** the `web` and `eve` services — and add a database (see below).
 
 ## Database
 
-### `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` (required on Vercel)
+### `DATABASE_URL` (required everywhere)
 
-Locally, NuxtHub (`hub.db: "sqlite"`) uses a SQLite file at `.data/db/sqlite.db`, so no configuration is needed. On Vercel (or any serverless host) that local file cannot be created — without a hosted database every request fails with:
+NuxtHub is pinned to PostgreSQL with the `postgres-js` driver, so a database is
+required in development too — there is no local file fallback. Without it every
+command that loads Nuxt stops with:
 
 ```
-Error: ConnectionFailed("Unable to open connection to local database .../.data/db/sqlite.db: 14")
+postgres-js driver requires DATABASE_URL, POSTGRES_URL, or POSTGRESQL_URL
+environment variable when applyMigrationsDuringBuild is enabled
 ```
 
-Provision a [Turso database from the Vercel Marketplace](https://vercel.com/marketplace/tursocloud) — the Deploy button in the README includes it automatically, or add it to an existing project:
+Provision [Neon from the Vercel Marketplace](https://vercel.com/marketplace/neon) — the
+Deploy button in the README includes it — or add it to an existing project:
 
 ```bash
-vercel integration add turso
+vercel integration add neon
 ```
 
-This sets `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` on the project. NuxtHub detects them at **build time** and switches from the local file to the remote libSQL database, so redeploy after adding them. Then apply the schema:
+The integration sets `DATABASE_URL` on Production and Preview. Add it to
+**Development** as well (a separate Neon branch keeps local work off the
+deployed data), then pull it locally:
 
 ```bash
-vercel env pull .env --yes
+vercel env pull
+```
+
+Migrations in [`server/db/migrations/postgresql/`](../server/db/migrations/postgresql/)
+are applied at build time, and on `pnpm dev`. To apply them by hand:
+
+```bash
 pnpm db:migrate
 ```
+
+The driver is pinned in [`nuxt.config.ts`](../nuxt.config.ts) rather than
+auto-detected. Left to itself, NuxtHub falls back to `pglite` when no URL is
+set, and pglite's WebAssembly payload does not survive the bundling eve does to
+run the agent — the failure surfaces much later as a missing `pglite.data`.
 
 ### `NUXT_PUBLIC_SITE_URL` (optional)
 
@@ -72,43 +89,25 @@ Shared bearer token between the Eve agent service and the Nuxt internal API (`/a
 
 Used for:
 
-- Memory read/write from the agent
+- Caller identity for the agent's session instructions
 - Slack account linking
-- Sendblue / iMessage phone linking lookup
+- Phone linking lookup
 
-**Must be identical** on both Vercel services (`web` and `eve`). If missing or mismatched, memory injection, Slack linking, and iMessage auth will fail silently or return 401.
+**Must be identical** on both Vercel services (`web` and `eve`). If missing or mismatched, Slack and phone linking will fail silently or return 401.
 
-## Sendblue (iMessage, optional)
+## Vercel Blob (memory)
 
-Reach the agent over iMessage via [Sendblue](https://chat-sdk.dev/adapters/vendor-official/sendblue). Set these on the **eve** service (and `BETTER_AUTH_URL` on both services so the agent can resolve phone links):
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SENDBLUE_API_KEY` | Yes | API key ID from the [Sendblue dashboard](https://dashboard.sendblue.com) |
-| `SENDBLUE_API_SECRET` | Yes | API secret key |
-| `SENDBLUE_FROM_NUMBER` | Yes | Your Sendblue line in E.164 format (e.g. `+15551234567`) |
-| `SENDBLUE_WEBHOOK_SECRET` | Recommended | Shared secret verified via the `sb-signing-secret` header |
-| `SENDBLUE_STATUS_CALLBACK_URL` | No | Delivery status callbacks for outbound messages |
-| `SENDBLUE_ALLOWED_SERVICES` | No | Comma-separated list; defaults to `iMessage` only. Use `iMessage,SMS,RCS` to accept all |
-
-Setup:
-
-1. Create a Sendblue account and note your API credentials and assigned number (`sendblue show-keys`, `sendblue lines`).
-2. Set the env vars above on the **eve** Vercel service.
-3. Configure the Sendblue **receive webhook** to:
-
-   `https://<your-domain>/_eve_internal/eve/eve/v1/sendblue/webhook`
-
-4. Users add their personal phone number (E.164) in **Settings → Profile** before messaging the Sendblue number.
-
-See [Customization](./CUSTOMIZATION.md#sendblue-imessage) for the full linking flow.
+Eve's `fileMemory()` provider stores one private Blob document per user at
+`eve/memory/file/<scope>/MEMORY.md`. Attach a Blob store to the project and
+`BLOB_READ_WRITE_TOKEN` is provided automatically; without one the agent fails
+on its first memory recall.
 
 ## AI provider
 
 This template does not define AI keys in `.env.example`. The default model is set in [`agent/agent.ts`](../agent/agent.ts):
 
 ```typescript
-model: "anthropic/claude-sonnet-4.6"
+model: "anthropic/claude-sonnet-5"
 ```
 
 On Vercel, Eve handles provider configuration through the platform. For local development, follow [Eve docs](https://eve.dev) for your chosen provider.
@@ -134,12 +133,16 @@ These paths are gitignored and should never be committed:
 | Path | Purpose |
 |------|---------|
 | `.env` | Local secrets |
-| `.data/` | SQLite database (NuxtHub) |
+| `.data/` | NuxtHub local state |
 | `.eve/` | Eve dev cache |
 | `.vercel/` | Vercel CLI link metadata |
 
-Reset the local database:
+Reset the database — destructive, it drops every table:
 
 ```bash
-rm -rf .data/db && pnpm db:migrate
+psql "$DATABASE_URL" -c 'drop schema public cascade; create schema public;'
+pnpm db:migrate
 ```
+
+Pointing `DATABASE_URL` at a fresh Neon branch does the same without dropping
+anything.

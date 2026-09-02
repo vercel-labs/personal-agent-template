@@ -2,7 +2,7 @@ const privateNoStore = { "cache-control": "private, no-store" } as const;
 const noStore = { "cache-control": "no-store" } as const;
 
 export default defineNuxtConfig({
-  modules: ["@nuxt/ui", "@comark/nuxt", "eve/nuxt", "@nuxthub/core", "@vercel/analytics"],
+  modules: ["@nuxt/ui", "@nuxt/eslint", "@comark/nuxt", "eve/nuxt", "@nuxthub/core", "@vercel/analytics"],
   css: ["~/assets/css/main.css"],
   devtools: { enabled: true },
   compatibilityDate: "latest",
@@ -26,7 +26,17 @@ export default defineNuxtConfig({
     "/api/connectors": { headers: privateNoStore },
     "/api/slack/**": { headers: privateNoStore },
     "/api/integrations/**": { headers: privateNoStore },
-    "/_eve_internal/**": { headers: noStore },
+    "/eve/v1/**": { headers: noStore },
+  },
+  vite: {
+    optimizeDeps: {
+      // Client code imports `ai` for its UI part helpers. `ai` is already ESM,
+      // so Vite would serve it unbundled — and its @ai-sdk/gateway dependency
+      // imports @vercel/oidc, whose browser build is CommonJS and cannot
+      // provide named exports to the browser. Pre-bundling `ai` converts the
+      // whole chain to ESM.
+      include: ["ai"],
+    },
   },
   nitro: {
     compressPublicAssets: true,
@@ -66,7 +76,13 @@ export default defineNuxtConfig({
   },
 
   hub: {
-    db: "sqlite",
+    // Pinned rather than auto-detected: without a URL the module falls back to
+    // pglite, whose WASM payload does not survive eve's agent bundling. Pinning
+    // turns that into a build-time error naming the missing DATABASE_URL.
+    db: {
+      dialect: "postgresql",
+      driver: "postgres-js",
+    },
   },
   runtimeConfig: {
     betterAuthSecret: process.env.BETTER_AUTH_SECRET,

@@ -1,9 +1,7 @@
 import type { ConnectorDef } from "#shared/types/connector";
-import { GITHUB_CONNECTOR } from "#shared/connect";
-import {
-  fetchLinearIssuesViaGraphql,
-  fetchLinearIssuesViaMcp,
-} from "~~/server/utils/linear-mcp";
+import { connectGithubScopesForPreset } from "@github-tools/sdk/connect";
+import { GITHUB_CONNECTOR, GITHUB_PRESET } from "#shared/connect";
+import { fetchLinearIssuesViaMcp } from "~~/server/utils/linear-mcp";
 
 export const connectors: ConnectorDef[] = [
   {
@@ -13,11 +11,15 @@ export const connectors: ConnectorDef[] = [
     connector: GITHUB_CONNECTOR,
     connectionName: "github",
     icon: "i-simple-icons-github",
-    scopes: ["repo"],
+    scopes: connectGithubScopesForPreset(GITHUB_PRESET),
     test: {
-      label: "List my repositories",
+      label: "List reachable repositories",
       run: async (token) => {
-        const res = await fetch("https://api.github.com/user/repos?per_page=5", {
+        // A page of five reads as "these are the only repositories you have".
+        // Ask for a full page so the count reflects what the grant can actually
+        // reach — a repository missing from it needs adding to the GitHub App's
+        // repository selection, which is a GitHub-side grant, not a scope.
+        const res = await fetch("https://api.github.com/user/repos?per_page=100&sort=full_name", {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "application/vnd.github+json",
@@ -30,7 +32,14 @@ export const connectors: ConnectorDef[] = [
         }
 
         const repos = await res.json() as Array<{ full_name: string }>;
-        return repos.map(repo => repo.full_name);
+        if (repos.length === 0) {
+          throw new Error("The connection works, but its GitHub App installation can reach no repositories. Add them to the installation's repository access.");
+        }
+
+        const shown = repos.slice(0, 10).map(repo => repo.full_name);
+        return repos.length > shown.length
+          ? [...shown, `…and ${repos.length - shown.length} more reachable`]
+          : shown;
       },
     },
   },
@@ -44,19 +53,7 @@ export const connectors: ConnectorDef[] = [
     scopes: [],
     test: {
       label: "List my issues",
-      run: async (token) => {
-        const mcpResult = await fetchLinearIssuesViaMcp(token);
-        if (mcpResult.ok) {
-          return mcpResult.results;
-        }
-
-        const graphqlResult = await fetchLinearIssuesViaGraphql(token);
-        if (graphqlResult.ok) {
-          return graphqlResult.results;
-        }
-
-        throw new Error(mcpResult.error ?? graphqlResult.error ?? "Linear test failed");
-      },
+      run: token => fetchLinearIssuesViaMcp(token),
     },
   },
 ];

@@ -55,7 +55,7 @@ const message = computed(() => {
       <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <UIcon
-            :name="invocation.output.condition.icon"
+            :name="`i-lucide-${invocation.output.condition.icon}`"
             class="size-6 text-white"
           />
           <div class="text-sm font-medium">
@@ -95,7 +95,7 @@ const message = computed(() => {
           </div>
 
           <UIcon
-            :name="forecast.condition.icon"
+            :name="`i-lucide-${forecast.condition.icon}`"
             class="size-5 text-white"
           />
           <div class="text-xs font-medium">
