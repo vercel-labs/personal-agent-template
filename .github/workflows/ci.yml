@@ -12,6 +12,25 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+
+    # NuxtHub resolves the database at config time and applies migrations during
+    # `nuxt build`, so lint, typecheck and build all need a reachable Postgres.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
     steps:
       - uses: actions/checkout@v6
 
