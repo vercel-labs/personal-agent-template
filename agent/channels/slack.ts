@@ -177,7 +177,7 @@ async function buildSlackTurn(ctx: SlackContext, message: SlackMessage) {
 
 // Replace with your Vercel Connect Slack slug (e.g. "slack/your-agent").
 export default slackChannel({
-  credentials: connectSlackCredentials("slack/v"),
+  credentials: connectSlackCredentials("slack/personal-agent-template"),
 
   async onAppMention(ctx, message) {
     return buildSlackTurn(ctx, message);
