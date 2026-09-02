@@ -1,8 +1,5 @@
 import { createAuthClient } from "better-auth/vue";
 
-// Node fetch (SSR) requires an absolute base URL; the browser can use same-origin.
-const baseURL = import.meta.server
-  ? (process.env.BETTER_AUTH_URL || "http://localhost:3000")
-  : undefined;
-
-export const authClient = createAuthClient(baseURL ? { baseURL } : undefined);
+// Same-origin, browser only. Anything that needs a session during SSR goes
+// through `useRequestFetch()`, which reaches Nitro without leaving the process.
+export const authClient = createAuthClient();
