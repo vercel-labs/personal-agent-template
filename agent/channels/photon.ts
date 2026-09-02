@@ -1,7 +1,13 @@
 import { connectPhotonCredentials } from "@vercel/connect/eve";
 import { defaultPhotonAuth, photonIMessageChannel } from "eve/channels/photon";
+import { agent } from "../../shared/agent.js";
 import { buildAppSessionAuth } from "../../shared/app-auth.js";
 import { fetchPhoneLink } from "../lib/phone-internal.js";
+
+// Every iMessage is a private conversation, and eve titles a run with the
+// message text when none is given — the same exposure the Slack channel avoids
+// by titling DMs "Private message".
+const TITLE = "iMessage";
 
 /** iMessage handles are phone numbers or Apple IDs; only the former can match a profile. */
 function asPhoneNumber(handle: string) {
@@ -17,6 +23,9 @@ function asPhoneNumber(handle: string) {
 export default photonIMessageChannel({
   credentials: connectPhotonCredentials("photon/personal-agent-template"),
 
+  // The Chat SDK runtime labels the sender "eve" unless told otherwise.
+  userName: agent.name,
+
   async onMessage(_ctx, message) {
     if (message.author.isBot) {
       return null;
@@ -30,6 +39,7 @@ export default photonIMessageChannel({
       // tool would fail. Answer as a stranger and say how to be recognised.
       return {
         auth: defaultPhotonAuth(message),
+        title: TITLE,
         context: [
           "This number is not on any V profile, so you have no access to the caller's memory or integrations.",
           "If they ask for anything that needs those, tell them to add this number under Settings → Profile.",
@@ -38,6 +48,7 @@ export default photonIMessageChannel({
     }
 
     return {
+      title: TITLE,
       auth: buildAppSessionAuth(link.appUserId, {
         name: message.author.fullName,
         phone_number: link.phoneNumber,

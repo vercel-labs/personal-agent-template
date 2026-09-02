@@ -142,6 +142,13 @@ credentials: connectSlackCredentials("slack/your-slug"),
 
 Slack linking uses the internal API — `INTERNAL_API_SECRET` must be set.
 
+Follow-ups in a thread the agent is already answering do not need another
+mention. That relies on Slack sending plain message events: open **Advanced**
+on the connector and add the `message.channels` trigger event and the
+`channels:history` bot scope (`message.groups` and `groups:history` for private
+channels). Without them nothing breaks — Slack simply never sends the event, and
+mentions keep working. Inbound file attachments additionally need `files:read`.
+
 ### iMessage (Photon)
 
 `eve add channel/photon-imessage` walks through the Photon project, the agent's
