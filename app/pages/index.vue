@@ -3,14 +3,23 @@ import { startChat } from "~/composables/chat/navigation";
 
 const input = ref("");
 
-const greeting = computed(() => {
-  const hour = new Date().getHours();
-  let timeGreeting = "Good evening";
-  if (hour < 12) timeGreeting = "Good morning";
-  else if (hour < 18) timeGreeting = "Good afternoon";
+const examples = [
+  "Build a landing page for a developer tool",
+  "Create a dashboard with authentication",
+  "Clone this UI and make it responsive",
+];
 
-  return timeGreeting;
-});
+const templates = [
+  { title: "Next.js starter", meta: "Next.js · TypeScript", icon: "i-simple-icons-nextdotjs" },
+  { title: "Nuxt workspace", meta: "Nuxt · Vue · TypeScript", icon: "i-simple-icons-nuxtdotjs" },
+  { title: "React app", meta: "React · Vite · TypeScript", icon: "i-simple-icons-react" },
+];
+
+const projects = [
+  { title: "WebSandbox Agent", meta: "Updated just now", icon: "i-lucide-box" },
+  { title: "Velclaw Workspace", meta: "Updated yesterday", icon: "i-lucide-layout-dashboard" },
+  { title: "AI Landing Page", meta: "Updated 3 days ago", icon: "i-lucide-sparkles" },
+];
 
 function createChat(prompt: string) {
   const text = prompt.trim();
@@ -23,91 +32,133 @@ function onSubmit() {
   createChat(input.value);
 }
 
+function useExample(example: string) {
+  input.value = example;
+}
+
 function summarizeDay() {
   void startChat("Summarize my day using the daily-summary skill.");
 }
-
-const quickChats = [
-  {
-    label: "Who are you?",
-    icon: "i-lucide-user-round",
-    action: () => createChat("Who are you?"),
-  },
-  {
-    label: "What can you help me with?",
-    icon: "i-lucide-message-circle-question",
-    action: () => createChat("What can you help me with?"),
-  },
-  {
-    label: "What is the weather in Paris?",
-    icon: "i-lucide-sun",
-    action: () => createChat("What is the weather in Paris?"),
-  },
-  {
-    label: "What do you remember about me?",
-    icon: "i-lucide-brain",
-    action: () => createChat("What do you remember about me?"),
-  },
-  {
-    label: "Summarize my day",
-    icon: "i-lucide-calendar-days",
-    action: summarizeDay,
-  },
-];
 </script>
 
 <template>
-  <UDashboardPanel
-    id="home"
-    class="min-h-0"
-    :ui="{ body: 'p-0 sm:p-0' }"
-  >
+  <UDashboardPanel id="home" class="min-h-0" :ui="{ body: 'p-0 sm:p-0' }">
     <template #header>
-      <AppNavbar />
+      <AppNavbar>
+        <template #title>
+          <div class="flex items-center gap-2 text-sm font-medium">
+            <AppLogo class="h-4 w-auto text-highlighted" />
+            <span class="hidden sm:inline">WebSandBox</span>
+          </div>
+        </template>
+      </AppNavbar>
     </template>
 
     <template #body>
-      <div class="hero-glow flex flex-1">
-        <UContainer class="flex flex-1 flex-col justify-center gap-4 py-8 sm:gap-6">
-          <div class="space-y-1">
-            <h1 class="text-3xl font-bold text-highlighted sm:text-4xl">
-              {{ greeting }}
+      <div class="websandbox-home flex min-h-full flex-1 flex-col">
+        <section class="mx-auto flex w-full max-w-4xl flex-1 flex-col justify-center px-5 pb-16 pt-20 sm:px-8">
+          <div class="mb-8 text-center">
+            <div class="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-2xl border border-default bg-elevated shadow-sm">
+              <AppLogo class="h-5 w-auto text-highlighted" />
+            </div>
+            <h1 class="text-balance text-4xl font-semibold tracking-[-0.04em] text-highlighted sm:text-5xl">
+              What do you want to build?
             </h1>
-            <p class="text-sm text-muted sm:text-base">
-              V — your personal agent
+            <p class="mx-auto mt-3 max-w-xl text-sm leading-6 text-muted sm:text-base">
+              Describe an app, import a repository, or ask the agent to change your project.
             </p>
           </div>
 
           <UChatPrompt
             v-model="input"
-            class="[view-transition-name:chat-prompt]"
+            class="websandbox-prompt [view-transition-name:chat-prompt]"
             variant="subtle"
-            :ui="{ base: 'px-1.5' }"
+            :ui="{ base: 'min-h-32 rounded-2xl border border-default bg-default px-3 py-3 shadow-xl shadow-black/5 dark:shadow-black/20' }"
             @submit="onSubmit"
           >
             <template #footer>
-              <UChatPromptSubmit
-                class="ms-auto shrink-0"
-                color="neutral"
-                size="sm"
-              />
+              <div class="flex w-full items-center justify-between gap-2">
+                <div class="flex items-center gap-1">
+                  <UButton color="neutral" variant="ghost" size="sm" icon="i-lucide-paperclip" aria-label="Attach" />
+                  <UButton color="neutral" variant="ghost" size="sm" icon="i-lucide-github" aria-label="Import from GitHub" />
+                  <UButton color="neutral" variant="ghost" size="sm" icon="i-lucide-sliders-horizontal" aria-label="Settings" />
+                </div>
+                <UChatPromptSubmit class="shrink-0" color="primary" size="sm" />
+              </div>
             </template>
           </UChatPrompt>
 
-          <div class="flex flex-wrap gap-2">
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
             <UButton
-              v-for="quickChat in quickChats"
-              :key="quickChat.label"
-              :icon="quickChat.icon"
-              :label="quickChat.label"
-              size="sm"
+              v-for="example in examples"
+              :key="example"
+              :label="example"
               color="neutral"
               variant="outline"
-              class="rounded-full"
-              @click="quickChat.action()"
+              size="sm"
+              class="rounded-full bg-default/70"
+              @click="useExample(example)"
             />
           </div>
-        </UContainer>
+
+          <div class="mt-14 grid gap-10 sm:grid-cols-2">
+            <section>
+              <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-medium text-highlighted">Recent projects</h2>
+                <UButton label="View all" color="neutral" variant="link" size="xs" />
+              </div>
+              <div class="divide-y divide-default overflow-hidden rounded-xl border border-default bg-default">
+                <button
+                  v-for="project in projects"
+                  :key="project.title"
+                  class="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-muted"
+                  @click="createChat('Open the project ' + project.title)"
+                >
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-highlighted">
+                    <UIcon :name="project.icon" class="h-4 w-4" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block truncate text-sm font-medium text-highlighted">{{ project.title }}</span>
+                    <span class="block text-xs text-muted">{{ project.meta }}</span>
+                  </span>
+                  <UIcon name="i-lucide-chevron-right" class="h-4 w-4 text-muted" />
+                </button>
+              </div>
+            </section>
+
+            <section>
+              <div class="mb-3 flex items-center justify-between">
+                <h2 class="text-sm font-medium text-highlighted">Start from a template</h2>
+                <UButton label="Browse" color="neutral" variant="link" size="xs" />
+              </div>
+              <div class="grid gap-2">
+                <button
+                  v-for="template in templates"
+                  :key="template.title"
+                  class="group flex items-center gap-3 rounded-xl border border-default bg-default px-4 py-3.5 text-left transition-all hover:-translate-y-0.5 hover:border-accented hover:shadow-md"
+                  @click="useExample('Create a ' + template.title + ' project')"
+                >
+                  <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-highlighted">
+                    <UIcon :name="template.icon" class="h-4 w-4" />
+                  </span>
+                  <span class="min-w-0 flex-1">
+                    <span class="block text-sm font-medium text-highlighted">{{ template.title }}</span>
+                    <span class="block text-xs text-muted">{{ template.meta }}</span>
+                  </span>
+                  <UIcon name="i-lucide-arrow-up-right" class="h-4 w-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </button>
+              </div>
+            </section>
+          </div>
+
+          <div class="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted">
+            <button class="hover:text-highlighted" @click="summarizeDay">Summarize my day</button>
+            <span>•</span>
+            <span>WebSandbox Agent</span>
+            <span>•</span>
+            <span>Runs in your workspace</span>
+          </div>
+        </section>
       </div>
     </template>
   </UDashboardPanel>

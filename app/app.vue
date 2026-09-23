@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const colorMode = useColorMode();
 
-const themeColor = computed(() => (colorMode.value === "dark" ? "#1b1718" : "#ffffff"));
+const themeColor = computed(() => (colorMode.value === "dark" ? "#08090B" : "#F4F6F8"));
 
 useHead({
   meta: [
@@ -14,7 +14,7 @@ useSiteSeo();
 
 <template>
   <UApp :toaster="{ position: 'top-right' }" :tooltip="{ delayDuration: 200 }">
-    <NuxtLoadingIndicator color="var(--ui-text-highlighted)" />
+    <NuxtLoadingIndicator color="var(--ui-primary)" />
 
     <NuxtLayout>
       <NuxtPage />

@@ -1,11 +1,11 @@
 // Customize agent branding here (name, slug, tagline, avatar).
 export const agent = {
-  name: "V",
-  slug: "v",
-  tagline: "What do you need?",
+  name: "WebSandBox",
+  slug: "websandbox",
+  tagline: "Build, preview, and ship from one workspace.",
   description:
-    "Remembers your context across conversations and channels.",
+    "An AI-first browser sandbox for turning ideas into running web projects.",
   avatar: {
-    icon: "i-lucide-bot",
+    icon: "i-lucide-panels-top-left",
   },
 } as const;

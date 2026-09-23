@@ -30,11 +30,6 @@ export default defineNuxtConfig({
   },
   vite: {
     optimizeDeps: {
-      // Client code imports `ai` for its UI part helpers. `ai` is already ESM,
-      // so Vite would serve it unbundled — and its @ai-sdk/gateway dependency
-      // imports @vercel/oidc, whose browser build is CommonJS and cannot
-      // provide named exports to the browser. Pre-bundling `ai` converts the
-      // whole chain to ESM.
       include: ["ai"],
     },
   },
@@ -48,7 +43,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: "en" },
-      title: "V",
+      title: "WebSandBox",
       titleTemplate: "%s",
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1",
@@ -56,7 +51,7 @@ export default defineNuxtConfig({
         {
           name: "description",
           content:
-            "Your personal AI agent. Chat on the web, Slack, or iMessage — query Linear and pick up where you left off.",
+            "WebSandBox — an AI-first browser workspace for building, previewing, and shipping web projects.",
         },
         { name: "theme-color", content: "#1b1718" },
         { name: "color-scheme", content: "light dark" },
@@ -70,15 +65,12 @@ export default defineNuxtConfig({
 
   fonts: {
     families: [
-      { name: 'Geist', weights: ['100 900'], global: true },
-      { name: 'Geist Mono', weights: ['100 900'], global: true },
+      { name: "Geist", weights: ["100 900"], global: true },
+      { name: "Geist Mono", weights: ["100 900"], global: true },
     ],
   },
 
   hub: {
-    // Pinned rather than auto-detected: without a URL the module falls back to
-    // pglite, whose WASM payload does not survive eve's agent bundling. Pinning
-    // turns that into a build-time error naming the missing DATABASE_URL.
     db: {
       dialect: "postgresql",
       driver: "postgres-js",

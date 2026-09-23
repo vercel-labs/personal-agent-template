@@ -69,3 +69,39 @@ agent maintains them with `profile__save_memory` and `profile__remove_memory`.
 - [`agent/agent.ts`](agent/agent.ts) — AI model
 
 See [docs/CUSTOMIZATION.md](docs/CUSTOMIZATION.md) for details.
+
+
+## Agent Skills
+
+Reusable skills live in [agent/skills/](agent/skills/README.md).
+
+### Build
+- [build](agent/skills/build.md) — end-to-end implementation
+- [debugging](agent/skills/debugging.md) — root-cause investigation
+- [refactoring](agent/skills/refactoring.md) — behavior-preserving structural improvement
+- [agent-orchestration](agent/skills/agent-orchestration.md) — coordinate specialized skills
+
+### Design
+- [design](agent/skills/design.md) — production UI and design systems
+- [frontend](agent/skills/frontend.md) — responsive frontend engineering
+- [accessibility](agent/skills/accessibility.md) — inclusive interaction and semantics
+
+### Engineering
+- [backend](agent/skills/backend.md) — server-side implementation
+- [api-design](agent/skills/api-design.md) — stable API contracts
+- [database](agent/skills/database.md) — schema and persistence
+- [performance](agent/skills/performance.md) — measured optimization
+- [security](agent/skills/security.md) — secure-by-default implementation
+
+### Delivery
+- [testing](agent/skills/testing.md) — automated validation
+- [code-review](agent/skills/code-review.md) — correctness and maintainability review
+- [git-github](agent/skills/git-github.md) — version control and collaboration
+- [ci-cd](agent/skills/ci-cd.md) — quality gates and deployment
+- [devops](agent/skills/devops.md) — runtime operations
+- [documentation](agent/skills/documentation.md) — synchronized project knowledge
+
+### Research
+- [research](agent/skills/research.md) — evidence-driven technical investigation
+
+When a task spans multiple areas, select the minimum relevant skills and run a final cross-layer validation pass. For non-trivial UI work, use the repository's design skill and the 12ui design workflow where available.
