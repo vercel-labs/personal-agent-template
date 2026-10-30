@@ -1,14 +1,14 @@
-import type { EveMessageData, UseEveAgentOptions } from "eve/vue";
+import type { UseEveAgentOptions } from "eve/vue";
 
-type StreamEvent = Parameters<NonNullable<UseEveAgentOptions<EveMessageData>["onEvent"]>>[0];
-type FailureEvent = Extract<StreamEvent, { type: "turn.failed" | "session.failed" }>;
+type StreamEvent = Parameters<NonNullable<UseEveAgentOptions["onEvent"]>>[0];
+type FailureEvent = Extract<StreamEvent, { type: "turn.settled" | "session.ended" }>;
 
 const errorsByChatId = ref<Record<string, string>>({});
 
 function messageFor(event: FailureEvent): string {
-  const detail = event.data.message?.trim();
+  const detail = event.data.error?.message?.trim();
 
-  if (event.type === "session.failed") {
+  if (event.type === "session.ended") {
     return detail
       ? `This conversation could not recover: ${detail}`
       : "This conversation could not recover. Send a new message to start again.";

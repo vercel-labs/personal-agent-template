@@ -1,41 +1,30 @@
-import { isDynamicToolUIPart, isToolUIPart } from "ai";
-import type { UIMessage } from "ai";
-import type { EveDynamicToolPart } from "eve/vue";
+import type { EveMessagePart, EveToolPart } from "eve/vue";
 
-export function hasVisibleParts(parts: UIMessage["parts"]): boolean {
+export function hasVisibleParts(parts: readonly EveMessagePart[]): boolean {
   return parts.some((part) => {
     if (part.type === "text" || part.type === "reasoning") return true;
-    return isToolUIPart(part) || isDynamicToolUIPart(part);
+    return part.type === "tool" || part.type === "interaction";
   });
 }
 
-export function normalizeEveParts(parts: UIMessage["parts"]): UIMessage["parts"] {
+export function normalizeEveParts(parts: readonly EveMessagePart[]): EveMessagePart[] {
   return parts.filter((part) => {
-    if (part.type === "step-start") return false;
     // Reasoning arrives empty unless the model is asked to summarize it.
     if (part.type === "reasoning") return part.text.trim().length > 0;
     return true;
   });
 }
 
-export function shouldShowToolInput(part: EveDynamicToolPart): boolean {
-  const request = part.toolMetadata?.eve?.inputRequest;
-  if (!request) {
-    return true;
-  }
-  return request.display === "confirmation";
-}
-
 /**
  * Turns a qualified tool id into something readable: extension mounts namespace
  * their tools as `github__listIssues`, and eve's own tools are snake_case.
  */
-export function getToolDisplayName(part: EveDynamicToolPart): string {
-  if (part.toolName === "ask_question") {
-    return part.toolMetadata?.eve?.inputRequest?.prompt ?? "Question";
+export function getToolDisplayName(part: EveToolPart): string {
+  if (part.name === "ask_question") {
+    return part.interaction?.request.prompt ?? "Question";
   }
 
-  const name = part.toolName.split("__").at(-1) ?? part.toolName;
+  const name = part.name.split("__").at(-1) ?? part.name;
   const words = name
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[_-]+/g, " ")
@@ -46,7 +35,7 @@ export function getToolDisplayName(part: EveDynamicToolPart): string {
 }
 
 /** The mount namespace of a qualified tool id, when it has one. */
-export function getToolNamespace(part: EveDynamicToolPart): string | undefined {
-  const [namespace, ...rest] = part.toolName.split("__");
+export function getToolNamespace(part: EveToolPart): string | undefined {
+  const [namespace, ...rest] = part.name.split("__");
   return rest.length > 0 ? namespace : undefined;
 }

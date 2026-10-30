@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { EveDynamicToolPart } from "eve/vue";
+import type { EveToolPart } from "eve/vue";
 
 export type AgentInputResponse = {
+  interactionId: string;
   optionId?: string;
-  requestId: string;
   text?: string;
 };
 
 const props = defineProps<{
   canRespond: boolean;
-  part: EveDynamicToolPart;
+  part: EveToolPart;
   compact?: boolean;
 }>();
 
@@ -17,10 +17,11 @@ const emit = defineEmits<{
   inputResponses: [responses: AgentInputResponse[]];
 }>();
 
-const inputRequest = computed(() => props.part.toolMetadata?.eve?.inputRequest);
-const inputResponse = computed(() => props.part.toolMetadata?.eve?.inputResponse);
+const interaction = computed(() => props.part.interaction);
+const inputRequest = computed(() => interaction.value?.request);
+const inputResponse = computed(() => interaction.value?.answer);
 
-const hidePrompt = computed(() => !props.compact && props.part.toolName === "ask_question");
+const hidePrompt = computed(() => !props.compact && props.part.name === "ask_question");
 
 const showOptions = computed(() => (inputRequest.value?.options?.length ?? 0) > 0);
 
@@ -53,8 +54,8 @@ const responseLabel = computed(
   () => selectedOption.value?.label ?? inputResponse.value?.text ?? inputResponse.value?.optionId,
 );
 
-function respond(optionId: string, requestId: string) {
-  emit("inputResponses", [{ optionId, requestId }]);
+function respond(optionId: string, interactionId: string) {
+  emit("inputResponses", [{ optionId, interactionId }]);
 }
 
 function respondText() {
@@ -63,7 +64,7 @@ function respondText() {
   if (!request || !text) {
     return;
   }
-  emit("inputResponses", [{ requestId: request.requestId, text }]);
+  emit("inputResponses", [{ interactionId: interaction.value!.interactionId, text }]);
 }
 
 function onFreeformKeydown(event: KeyboardEvent) {
@@ -111,7 +112,7 @@ function onFreeformKeydown(event: KeyboardEvent) {
           :variant="compact ? 'soft' : 'solid'"
           :disabled="!canRespond"
           size="xs"
-          @click="respond(option.id, inputRequest.requestId)"
+          @click="respond(option.id, interaction!.interactionId)"
         >
           {{ option.label }}
         </UButton>

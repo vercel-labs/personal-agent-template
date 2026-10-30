@@ -1,4 +1,5 @@
 export type AuthorizationChallengeState = {
+  interactionId: string;
   name: string;
   description: string;
   instructions?: string;
@@ -6,59 +7,81 @@ export type AuthorizationChallengeState = {
   userCode?: string;
   expiresAt?: string;
   webhookUrl?: string;
-  outcome?: "authorized" | "declined" | "failed" | "timed-out";
+  outcome?: "accepted" | "declined" | "invalid" | "failed" | "withdrawn" | "interrupted" | "abandoned" | "expired";
   reason?: string;
 };
 
 const challengesByName = ref<Map<string, AuthorizationChallengeState>>(new Map());
 
-export function recordAuthorizationEvent(event: { type: string; data: Record<string, unknown> }) {
-  if (event.type === "authorization.required") {
-    const data = event.data as {
-      name: string;
-      description: string;
-      webhookUrl?: string;
-      authorization?: {
+type AuthorizationEvent = {
+  type: "interaction.opened";
+  data: {
+    interactionId: string;
+    request: {
+      kind: string;
+      prompt: string;
+      signIn?: {
+        name: string;
+        displayName?: string;
         url?: string;
         userCode?: string;
         expiresAt?: string;
         instructions?: string;
+        callbackUrl?: string;
       };
     };
+  };
+} | {
+  type: "interaction.settled";
+  data: {
+    interactionId: string;
+    outcome: AuthorizationChallengeState["outcome"];
+    reason?: string;
+  };
+};
+
+export function recordAuthorizationEvent(event: AuthorizationEvent) {
+  if (event.type === "interaction.opened") {
+    const { data } = event;
+
+    if (data.request.kind !== "sign-in" || !data.request.signIn) {
+      return;
+    }
+
+    const signIn = data.request.signIn;
 
     const next = new Map(challengesByName.value);
-    next.set(data.name, {
-      name: data.name,
-      description: data.description,
-      instructions: data.authorization?.instructions,
-      url: data.authorization?.url,
-      userCode: data.authorization?.userCode,
-      expiresAt: data.authorization?.expiresAt,
-      webhookUrl: data.webhookUrl,
+    next.set(signIn.name, {
+      interactionId: data.interactionId,
+      name: signIn.name,
+      description: data.request.prompt,
+      instructions: signIn.instructions,
+      url: signIn.url,
+      userCode: signIn.userCode,
+      expiresAt: signIn.expiresAt,
+      webhookUrl: signIn.callbackUrl,
     });
     challengesByName.value = next;
     return;
   }
 
-  if (event.type === "authorization.completed") {
-    const data = event.data as {
-      name: string;
-      outcome: AuthorizationChallengeState["outcome"];
-      reason?: string;
-    };
+  if (event.type === "interaction.settled") {
+    const { data } = event;
 
-    const existing = challengesByName.value.get(data.name);
+    const existing = [...challengesByName.value.values()].find(
+      challenge => challenge.interactionId === data.interactionId,
+    );
     if (!existing) {
       return;
     }
 
     const next = new Map(challengesByName.value);
 
-    if (data.outcome === "authorized") {
-      next.delete(data.name);
+    if (data.outcome === "accepted") {
+      next.delete(existing.name);
     }
     else {
-      next.set(data.name, {
+      next.set(existing.name, {
         ...existing,
         outcome: data.outcome,
         reason: data.reason,
@@ -110,7 +133,7 @@ export function useAuthorizationChallenges() {
   );
 
   const failedChallenges = computed(() =>
-    [...challengesByName.value.values()].filter((challenge) => !!challenge.outcome && challenge.outcome !== "authorized"),
+    [...challengesByName.value.values()].filter((challenge) => !!challenge.outcome && challenge.outcome !== "accepted"),
   );
 
   async function tryResumeConnectedChallenges(options?: { skipIfBusy?: boolean }) {

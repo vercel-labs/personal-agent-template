@@ -104,28 +104,18 @@ function handleInputResponses(responses: Parameters<typeof respond>[0]) {
         class="flex flex-1"
       >
         <UContainer class="flex flex-1 flex-col gap-4 sm:gap-6">
-          <UChatMessages
-            should-auto-scroll
-            :messages="messages"
-            :status="status"
-            :spacing-offset="160"
-            :assistant="{ side: 'left', variant: 'naked', ui: { container: 'relative flex w-full min-w-0 items-start' } }"
-            class="pt-(--ui-header-height) pb-4 sm:pb-6"
-          >
-            <template #indicator>
-              <ChatActivityIndicator />
-            </template>
-
-            <template #content="{ message }">
-              <ChatMessageContentEve
-                :message="message"
-                :status="status"
-                :is-last="message.id === messages.at(-1)?.id"
-                :can-respond="!isBusy"
-                @input-responses="handleInputResponses"
-              />
-            </template>
-          </UChatMessages>
+          <div class="space-y-4 pt-(--ui-header-height) pb-4 sm:pb-6">
+            <ChatMessageContentEve
+              v-for="message in messages"
+              :key="message.id"
+              :message="message"
+              :status="status"
+              :is-last="message.id === messages.at(-1)?.id"
+              :can-respond="!isBusy"
+              @input-responses="handleInputResponses"
+            />
+            <ChatActivityIndicator v-if="isBusy && messages.length === 0" />
+          </div>
 
           <div
             v-if="pendingChallenges.length || failedChallenges.length"

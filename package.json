@@ -37,7 +37,7 @@
   "dependencies": {
     "@ai-sdk/mcp": "^2.0.41",
     "@comark/nuxt": "^0.6.2",
-    "@github-tools/eve-extension": "^0.7.0",
+    "@github-tools/eve-extension": "^0.9.0",
     "@github-tools/sdk": "^1.16.0",
     "@nuxt/ui": "^4.11.0",
     "@nuxthub/core": "^0.10.8",
@@ -48,7 +48,7 @@
     "better-auth": "^1.7.2",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
-    "eve": "^0.47.3",
+    "eve": "^1.0.0-rc.0",
     "maska": "^3.2.0",
     "nuxt": "^4.5.2",
     "postgres": "^3.4.9",

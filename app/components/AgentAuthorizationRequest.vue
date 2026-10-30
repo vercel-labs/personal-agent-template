@@ -12,7 +12,7 @@ const label = computed(() => {
 
 const icon = computed(() => connectionIcon(props.challenge.name));
 
-const isFailed = computed(() => !!props.challenge.outcome && props.challenge.outcome !== "authorized");
+const isFailed = computed(() => !!props.challenge.outcome && props.challenge.outcome !== "accepted");
 
 const statusLabel = computed(() => {
   if (!props.challenge.outcome) {
@@ -22,7 +22,7 @@ const statusLabel = computed(() => {
   switch (props.challenge.outcome) {
     case "declined":
       return "Declined";
-    case "timed-out":
+    case "expired":
       return "Timed out";
     default:
       return "Failed";
