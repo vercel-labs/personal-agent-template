@@ -57,6 +57,16 @@ const showThinking = computed(
       />
 
       <UChatTool
+        v-else-if="part.name === 'web_search' || part.name === 'google_search'"
+        :text="part.state === 'streaming' || part.state === 'running' ? 'Searching the web...' : 'Searched the web'"
+        :suffix="getSearchQuery(part as EveToolPart)"
+        :streaming="part.state === 'streaming' || part.state === 'running'"
+        chevron="leading"
+      >
+        <ChatToolSources :sources="getSources(part as EveToolPart)" />
+      </UChatTool>
+
+      <UChatTool
         v-else-if="part.name !== 'ask_question'"
         :text="getToolDisplayName(part as EveToolPart)"
         :suffix="getToolNamespace(part as EveToolPart)"
