@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EveToolPart } from "eve/vue";
+import type { Interaction } from "eve/vue";
 
 export type AgentInputResponse = {
   interactionId: string;
@@ -9,7 +9,8 @@ export type AgentInputResponse = {
 
 const props = defineProps<{
   canRespond: boolean;
-  part: EveToolPart;
+  interaction: Interaction;
+  isAskQuestion?: boolean;
   compact?: boolean;
 }>();
 
@@ -17,11 +18,12 @@ const emit = defineEmits<{
   inputResponses: [responses: AgentInputResponse[]];
 }>();
 
-const interaction = computed(() => props.part.interaction);
-const inputRequest = computed(() => interaction.value?.request);
-const inputResponse = computed(() => interaction.value?.answer);
+const inputRequest = computed(() => props.interaction.request);
+const inputResponse = computed(() => props.interaction.answer);
 
-const hidePrompt = computed(() => !props.compact && props.part.name === "ask_question");
+const hidePrompt = computed(
+  () => !props.compact && props.isAskQuestion,
+);
 
 const showOptions = computed(() => (inputRequest.value?.options?.length ?? 0) > 0);
 
@@ -64,7 +66,7 @@ function respondText() {
   if (!request || !text) {
     return;
   }
-  emit("inputResponses", [{ interactionId: interaction.value!.interactionId, text }]);
+  emit("inputResponses", [{ interactionId: props.interaction.interactionId, text }]);
 }
 
 function onFreeformKeydown(event: KeyboardEvent) {
@@ -79,7 +81,6 @@ function onFreeformKeydown(event: KeyboardEvent) {
 
 <template>
   <div
-    v-if="inputRequest"
     :class="compact
       ? 'mt-2 max-w-lg space-y-2'
       : 'space-y-3 rounded-lg border border-default/60 bg-elevated/40 p-3'"
@@ -112,7 +113,7 @@ function onFreeformKeydown(event: KeyboardEvent) {
           :variant="compact ? 'soft' : 'solid'"
           :disabled="!canRespond"
           size="xs"
-          @click="respond(option.id, interaction!.interactionId)"
+          @click="respond(option.id, interaction.interactionId)"
         >
           {{ option.label }}
         </UButton>

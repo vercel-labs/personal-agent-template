@@ -86,7 +86,17 @@ async function callerSection(ctx: DynamicContext) {
     return "";
   }
 
-  const profile = !userId ? undefined : await fetchUserProfile(userId);
+  // Dynamic instructions run before every ordinary model call. Cache this
+  // session-scoped, JSON-safe lookup so tool loops keep one stable caller
+  // section and do not repeatedly call the internal API.
+  const profile = await ctx.memo(["profile", userId], async () => {
+    try {
+      return await fetchUserProfile(userId) ?? null;
+    }
+    catch {
+      return null;
+    }
+  });
   const displayName = profile?.name?.trim() || name;
 
   const lines = [

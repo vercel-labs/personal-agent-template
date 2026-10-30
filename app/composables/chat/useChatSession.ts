@@ -79,7 +79,12 @@ export function useChatSession(thread: ThreadRecord) {
     if (queued.value !== undefined) return "submitted";
     // Replaying a stored session is not an in-flight turn.
     if (agent.status.value === "resuming" || agent.status.value === "idle") return "ready";
-    return "streaming";
+    if (agent.error.value) return "error";
+
+    // Eve reports a busy session for both a just-submitted delivery and a
+    // streaming model response. Derive the UI distinction from its transcript.
+    const last = agent.messages.value.at(-1);
+    return last?.role === "user" ? "submitted" : "streaming";
   });
 
   const error = computed(() => {

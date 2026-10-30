@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EveMessage, EveToolPart } from "eve/vue";
+import type { EveInteractionPart, EveMessage, EveToolPart } from "eve/vue";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import type { ChatStatus } from "~/composables/chat/useChatSession";
 import { hasVisibleParts, getToolDisplayName, getToolNamespace, normalizeEveParts } from "~/utils/chat/eve";
@@ -51,8 +51,13 @@ const showThinking = computed(
     </UChatReasoning>
 
     <template v-else-if="part.type === 'tool'">
+      <ChatToolWeather
+        v-if="part.name === 'weather'"
+        :part="part as EveToolPart"
+      />
+
       <UChatTool
-        v-if="part.name !== 'ask_question'"
+        v-else-if="part.name !== 'ask_question'"
         :text="getToolDisplayName(part as EveToolPart)"
         :suffix="getToolNamespace(part as EveToolPart)"
         :streaming="part.state === 'streaming' || part.state === 'running'"
@@ -62,7 +67,7 @@ const showThinking = computed(
         <AgentInputRequest
           v-if="part.interaction"
           :can-respond="canRespond ?? true"
-          :part="part as EveToolPart"
+          :interaction="part.interaction"
           @input-responses="emit('inputResponses', $event)"
         />
 
@@ -82,7 +87,27 @@ const showThinking = computed(
         v-else-if="part.interaction"
         compact
         :can-respond="canRespond ?? true"
-        :part="part as EveToolPart"
+        :interaction="part.interaction"
+        is-ask-question
+        @input-responses="emit('inputResponses', $event)"
+      />
+    </template>
+
+    <!--
+      Eve v27 represents interactions without a calling tool as their own
+      message parts. This includes agent questions, budget continuations, and
+      sign-ins, so rendering them here keeps a paused turn actionable.
+    -->
+    <template v-else-if="part.type === 'interaction'">
+      <AgentSignInRequest
+        v-if="part.request.kind === 'sign-in'"
+        :part="part as EveInteractionPart"
+      />
+
+      <AgentInputRequest
+        v-else
+        :can-respond="canRespond ?? true"
+        :interaction="part as EveInteractionPart"
         @input-responses="emit('inputResponses', $event)"
       />
     </template>
