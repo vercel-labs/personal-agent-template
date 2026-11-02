@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import type { EveDynamicToolPart } from "eve/vue";
+import type { Interaction } from "eve/vue";
 
 export type AgentInputResponse = {
+  interactionId: string;
   optionId?: string;
-  requestId: string;
   text?: string;
 };
 
 const props = defineProps<{
   canRespond: boolean;
-  part: EveDynamicToolPart;
+  interaction: Interaction;
+  isAskQuestion?: boolean;
   compact?: boolean;
 }>();
 
@@ -17,10 +18,12 @@ const emit = defineEmits<{
   inputResponses: [responses: AgentInputResponse[]];
 }>();
 
-const inputRequest = computed(() => props.part.toolMetadata?.eve?.inputRequest);
-const inputResponse = computed(() => props.part.toolMetadata?.eve?.inputResponse);
+const inputRequest = computed(() => props.interaction.request);
+const inputResponse = computed(() => props.interaction.answer);
 
-const hidePrompt = computed(() => !props.compact && props.part.toolName === "ask_question");
+const hidePrompt = computed(
+  () => !props.compact && props.isAskQuestion,
+);
 
 const showOptions = computed(() => (inputRequest.value?.options?.length ?? 0) > 0);
 
@@ -53,8 +56,8 @@ const responseLabel = computed(
   () => selectedOption.value?.label ?? inputResponse.value?.text ?? inputResponse.value?.optionId,
 );
 
-function respond(optionId: string, requestId: string) {
-  emit("inputResponses", [{ optionId, requestId }]);
+function respond(optionId: string, interactionId: string) {
+  emit("inputResponses", [{ optionId, interactionId }]);
 }
 
 function respondText() {
@@ -63,7 +66,7 @@ function respondText() {
   if (!request || !text) {
     return;
   }
-  emit("inputResponses", [{ requestId: request.requestId, text }]);
+  emit("inputResponses", [{ interactionId: props.interaction.interactionId, text }]);
 }
 
 function onFreeformKeydown(event: KeyboardEvent) {
@@ -78,7 +81,6 @@ function onFreeformKeydown(event: KeyboardEvent) {
 
 <template>
   <div
-    v-if="inputRequest"
     :class="compact
       ? 'mt-2 max-w-lg space-y-2'
       : 'space-y-3 rounded-lg border border-default/60 bg-elevated/40 p-3'"
@@ -111,7 +113,7 @@ function onFreeformKeydown(event: KeyboardEvent) {
           :variant="compact ? 'soft' : 'solid'"
           :disabled="!canRespond"
           size="xs"
-          @click="respond(option.id, inputRequest.requestId)"
+          @click="respond(option.id, interaction.interactionId)"
         >
           {{ option.label }}
         </UButton>

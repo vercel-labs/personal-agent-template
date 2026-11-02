@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AuthorizationChallengeState } from "~/composables/chat/useAuthorizationChallenges";
+import { signInEnding } from "eve/vue";
 
 const props = defineProps<{
   challenge: AuthorizationChallengeState;
@@ -12,21 +13,17 @@ const label = computed(() => {
 
 const icon = computed(() => connectionIcon(props.challenge.name));
 
-const isFailed = computed(() => !!props.challenge.outcome && props.challenge.outcome !== "authorized");
+const isFailed = computed(() => {
+  const outcome = props.challenge.outcome;
+  return !!outcome && ["failed", "timed out"].includes(signInEnding(outcome));
+});
 
 const statusLabel = computed(() => {
   if (!props.challenge.outcome) {
     return "Authorization required";
   }
 
-  switch (props.challenge.outcome) {
-    case "declined":
-      return "Declined";
-    case "timed-out":
-      return "Timed out";
-    default:
-      return "Failed";
-  }
+  return signInEnding(props.challenge.outcome);
 });
 
 const statusDotClass = computed(() => {

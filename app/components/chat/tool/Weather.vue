@@ -1,32 +1,31 @@
 <script setup lang="ts">
-import type { WeatherUIToolInvocation } from "~~/shared/utils/tools/weather";
+import type { EveToolPart } from "eve/vue";
+import type { WeatherOutput } from "~~/shared/tools/weather";
 
 const props = defineProps<{
-  invocation: WeatherUIToolInvocation;
-  streaming?: boolean;
+  part: EveToolPart;
 }>();
 
 const isLoading = computed(
-  () => props.invocation.state !== "output-available" && props.invocation.state !== "output-error",
+  () => ["streaming", "requested", "running"].includes(props.part.state),
 );
+const weather = computed(() => props.part.output as WeatherOutput | undefined);
 
 const color = computed(() => {
   return (
-    {
-      "output-available":
+    ({
+      completed:
         "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 text-white dark:from-sky-500 dark:via-blue-600 dark:to-indigo-700",
-      "output-error": "bg-muted text-error",
-    }[props.invocation.state as string] || "bg-muted text-muted"
+      failed: "bg-muted text-error",
+    } as Record<string, string>)[props.part.state] || "bg-muted text-muted"
   );
 });
 
 const message = computed(() => {
   return (
-    {
-      "input-available": "Loading weather data...",
-      "input-streaming": "Loading weather data...",
-      "output-error": "Can't get weather data, please try again later",
-    }[props.invocation.state as string] || "Loading weather data..."
+    ({
+      failed: "Can't get weather data, please try again later",
+    } as Record<string, string>)[props.part.state] || "Loading weather data..."
   );
 });
 </script>
@@ -36,18 +35,18 @@ const message = computed(() => {
     class="my-5 w-full max-w-md shrink-0 rounded-xl px-5 py-4"
     :class="color"
   >
-    <template v-if="invocation.state === 'output-available'">
+    <template v-if="weather">
       <div class="mb-3 flex items-start justify-between">
         <div class="flex items-baseline">
-          <span class="text-4xl font-bold">{{ invocation.output.temperature }}°</span>
+          <span class="text-4xl font-bold">{{ weather.temperature }}°</span>
           <span class="text-base text-white/80">C</span>
         </div>
         <div class="text-right">
           <div class="mb-1 text-base font-medium">
-            {{ invocation.output.location }}
+            {{ weather.location }}
           </div>
           <div class="text-xs text-white/70">
-            H:{{ invocation.output.temperatureHigh }}° L:{{ invocation.output.temperatureLow }}°
+            H:{{ weather.temperatureHigh }}° L:{{ weather.temperatureLow }}°
           </div>
         </div>
       </div>
@@ -55,11 +54,11 @@ const message = computed(() => {
       <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <UIcon
-            :name="`i-lucide-${invocation.output.condition.icon}`"
+            :name="`i-lucide-${weather.condition.icon}`"
             class="size-6 text-white"
           />
           <div class="text-sm font-medium">
-            {{ invocation.output.condition.text }}
+            {{ weather.condition.text }}
           </div>
         </div>
 
@@ -69,24 +68,24 @@ const message = computed(() => {
               name="i-lucide-droplets"
               class="size-3 text-blue-200"
             />
-            <span>{{ invocation.output.humidity }}%</span>
+            <span>{{ weather.humidity }}%</span>
           </div>
           <div class="flex items-center gap-1">
             <UIcon
               name="i-lucide-wind"
               class="size-3 text-blue-200"
             />
-            <span>{{ invocation.output.windSpeed }} km/h</span>
+            <span>{{ weather.windSpeed }} km/h</span>
           </div>
         </div>
       </div>
 
       <div
-        v-if="invocation.output.dailyForecast.length > 0"
+        v-if="weather.dailyForecast.length > 0"
         class="flex items-center justify-between"
       >
         <div
-          v-for="(forecast, index) in invocation.output.dailyForecast"
+          v-for="(forecast, index) in weather.dailyForecast"
           :key="index"
           class="flex flex-col items-center gap-1.5"
         >

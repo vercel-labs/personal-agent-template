@@ -1,5 +1,5 @@
 import { defineDynamic, defineInstructions } from "eve/instructions";
-import type { DynamicResolveContext } from "eve/instructions";
+import type { DynamicContext } from "eve/instructions";
 import { agent } from "../shared/agent.js";
 import { fetchUserProfile } from "./lib/profile-internal.js";
 
@@ -76,7 +76,7 @@ When the user asks about repositories, pull requests, issues, commits, or CI, us
  * edit in Settings. Distinct from the `profile` memory slot: that holds facts
  * the agent chooses to remember, this is identity the app already knows.
  */
-async function callerSection(ctx: DynamicResolveContext) {
+async function callerSection(ctx: DynamicContext) {
   const auth = ctx.session.auth.current;
   const userId = auth?.principalId;
   const attributes = auth?.attributes;
@@ -86,7 +86,17 @@ async function callerSection(ctx: DynamicResolveContext) {
     return "";
   }
 
-  const profile = !userId ? undefined : await fetchUserProfile(userId);
+  // Dynamic instructions run before every ordinary model call. Cache this
+  // session-scoped, JSON-safe lookup so tool loops keep one stable caller
+  // section and do not repeatedly call the internal API.
+  const profile = await ctx.memo(["profile", userId], async () => {
+    try {
+      return await fetchUserProfile(userId) ?? null;
+    }
+    catch {
+      return null;
+    }
+  });
   const displayName = profile?.name?.trim() || name;
 
   const lines = [
@@ -111,9 +121,6 @@ async function callerSection(ctx: DynamicResolveContext) {
   ].join("\n");
 }
 
-export default defineDynamic({
-  events: {
-    "session.started": async (_event, ctx: DynamicResolveContext) =>
-      defineInstructions({ markdown: `${BASE}${await callerSection(ctx)}` }),
-  },
-});
+export default defineDynamic(async (ctx: DynamicContext) =>
+  defineInstructions({ content: `${BASE}${await callerSection(ctx)}` }),
+);

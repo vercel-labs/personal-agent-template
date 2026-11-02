@@ -1,5 +1,4 @@
-import type { EveMessageData } from "eve/vue";
-import type { UIMessage } from "ai";
+import type { EveMessage } from "eve/vue";
 import type { ThreadRecord } from "#shared/types/thread";
 import type { AgentInputResponse } from "~/components/AgentInputRequest.vue";
 import { recordAuthorizationEvent } from "~/composables/chat/useAuthorizationChallenges";
@@ -10,9 +9,9 @@ import { clearTurnFailure, recordTurnFailure, turnFailure } from "~/composables/
 /** The four statuses the Nuxt UI chat components understand. */
 export type ChatStatus = "ready" | "submitted" | "streaming" | "error";
 
-function lastUserMessageText(data: EveMessageData) {
-  for (let index = data.messages.length - 1; index >= 0; index -= 1) {
-    const message = data.messages[index];
+function lastUserMessageText(messages: readonly EveMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
     if (message?.role !== "user") continue;
 
     const text = message.parts
@@ -45,11 +44,14 @@ export function useChatSession(thread: ThreadRecord) {
       }
     },
     onEvent: (event) => {
-      if (event.type === "authorization.required" || event.type === "authorization.completed") {
+      if (event.type === "interaction.opened" || event.type === "interaction.settled") {
         recordAuthorizationEvent(event);
       }
 
-      if (event.type === "turn.failed" || event.type === "session.failed") {
+      if (
+        (event.type === "turn.settled" && event.data.outcome === "failed")
+        || (event.type === "session.ended" && event.data.outcome === "failed")
+      ) {
         recordTurnFailure(chatId, event);
       }
 
@@ -63,20 +65,26 @@ export function useChatSession(thread: ThreadRecord) {
   const queued = ref<string>();
 
   const messages = computed(() => {
-    const sent = [...agent.data.value.messages] as UIMessage[];
+    const sent = [...agent.messages.value];
     if (!queued.value) return sent;
 
     return [...sent, {
       id: `pending:${chatId}`,
       role: "user",
       parts: [{ type: "text", text: queued.value }],
-    } as UIMessage];
+    } as EveMessage];
   });
 
   const status = computed<ChatStatus>(() => {
     if (queued.value !== undefined) return "submitted";
     // Replaying a stored session is not an in-flight turn.
-    return agent.status.value === "resuming" ? "ready" : agent.status.value;
+    if (agent.status.value === "resuming" || agent.status.value === "idle") return "ready";
+    if (agent.error.value) return "error";
+
+    // Eve reports a busy session for both a just-submitted delivery and a
+    // streaming model response. Derive the UI distinction from its transcript.
+    const last = agent.messages.value.at(-1);
+    return last?.role === "user" ? "submitted" : "streaming";
   });
 
   const error = computed(() => {
@@ -124,7 +132,7 @@ export function useChatSession(thread: ThreadRecord) {
   async function retry() {
     if (isBusy.value) return;
 
-    const text = lastUserMessageText(agent.data.value);
+    const text = lastUserMessageText(agent.messages.value);
     if (!text) return;
 
     clearTurnFailure(chatId);

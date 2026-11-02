@@ -1,4 +1,7 @@
+import type { InteractionFact } from "eve/events";
+
 export type AuthorizationChallengeState = {
+  interactionId: string;
   name: string;
   description: string;
   instructions?: string;
@@ -6,71 +9,66 @@ export type AuthorizationChallengeState = {
   userCode?: string;
   expiresAt?: string;
   webhookUrl?: string;
-  outcome?: "authorized" | "declined" | "failed" | "timed-out";
+  outcome?: "accepted" | "declined" | "invalid" | "failed" | "withdrawn" | "interrupted" | "abandoned" | "expired";
   reason?: string;
 };
 
-const challengesByName = ref<Map<string, AuthorizationChallengeState>>(new Map());
+const challengesById = ref<Map<string, AuthorizationChallengeState>>(new Map());
 
-export function recordAuthorizationEvent(event: { type: string; data: Record<string, unknown> }) {
-  if (event.type === "authorization.required") {
-    const data = event.data as {
-      name: string;
-      description: string;
-      webhookUrl?: string;
-      authorization?: {
-        url?: string;
-        userCode?: string;
-        expiresAt?: string;
-        instructions?: string;
-      };
-    };
+export function recordAuthorizationEvent(event: InteractionFact) {
+  if (event.type === "interaction.opened") {
+    const { data } = event;
 
-    const next = new Map(challengesByName.value);
-    next.set(data.name, {
-      name: data.name,
-      description: data.description,
-      instructions: data.authorization?.instructions,
-      url: data.authorization?.url,
-      userCode: data.authorization?.userCode,
-      expiresAt: data.authorization?.expiresAt,
-      webhookUrl: data.webhookUrl,
+    if (data.request.kind !== "sign-in" || !data.request.signIn) {
+      return;
+    }
+
+    const signIn = data.request.signIn;
+
+    const next = new Map(challengesById.value);
+    next.set(data.interactionId, {
+      interactionId: data.interactionId,
+      name: signIn.name,
+      description: data.request.prompt,
+      instructions: signIn.instructions,
+      url: signIn.url,
+      userCode: signIn.userCode,
+      expiresAt: signIn.expiresAt,
+      webhookUrl: signIn.callbackUrl,
     });
-    challengesByName.value = next;
+    challengesById.value = next;
     return;
   }
 
-  if (event.type === "authorization.completed") {
-    const data = event.data as {
-      name: string;
-      outcome: AuthorizationChallengeState["outcome"];
-      reason?: string;
-    };
+  if (event.type === "interaction.settled") {
+    const { data } = event;
 
-    const existing = challengesByName.value.get(data.name);
+    const existing = challengesById.value.get(data.interactionId);
     if (!existing) {
       return;
     }
 
-    const next = new Map(challengesByName.value);
+    const next = new Map(challengesById.value);
 
-    if (data.outcome === "authorized") {
-      next.delete(data.name);
+    if (data.outcome === "accepted") {
+      next.delete(existing.interactionId);
     }
     else {
-      next.set(data.name, {
+      next.set(existing.interactionId, {
         ...existing,
         outcome: data.outcome,
         reason: data.reason,
       });
     }
 
-    challengesByName.value = next;
+    challengesById.value = next;
   }
 }
 
 export function getPendingChallenge(connectionName: string) {
-  const challenge = challengesByName.value.get(connectionName);
+  const challenge = [...challengesById.value.values()].find(
+    item => item.name === connectionName,
+  );
   if (!challenge || challenge.outcome) {
     return undefined;
   }
@@ -94,23 +92,25 @@ export async function resolveAuthorizationChallenge(connectionName: string) {
     await resumeEveAuthorization(challenge.webhookUrl);
   }
 
-  const next = new Map(challengesByName.value);
-  next.delete(connectionName);
-  challengesByName.value = next;
+  const next = new Map(challengesById.value);
+  next.delete(challenge.interactionId);
+  challengesById.value = next;
   return true;
 }
 
 export function clearAuthorizationChallenges() {
-  challengesByName.value = new Map();
+  challengesById.value = new Map();
 }
 
 export function useAuthorizationChallenges() {
   const pendingChallenges = computed(() =>
-    [...challengesByName.value.values()].filter((challenge) => !challenge.outcome),
+    [...challengesById.value.values()].filter((challenge) => !challenge.outcome),
   );
 
   const failedChallenges = computed(() =>
-    [...challengesByName.value.values()].filter((challenge) => !!challenge.outcome && challenge.outcome !== "authorized"),
+    [...challengesById.value.values()].filter((challenge) =>
+      challenge.outcome === "failed" || challenge.outcome === "expired",
+    ),
   );
 
   async function tryResumeConnectedChallenges(options?: { skipIfBusy?: boolean }) {

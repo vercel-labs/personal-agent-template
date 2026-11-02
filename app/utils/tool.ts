@@ -1,5 +1,4 @@
-import type { getToolName } from "ai";
-import { getDomain, getFaviconUrl } from "~/utils/url";
+import type { EveToolPart } from "eve/vue";
 
 export interface Source {
   url: string;
@@ -16,13 +15,11 @@ interface SearchOutput {
   groundingMetadata?: { groundingChunks?: GoogleGroundingChunk[] };
 }
 
-type ToolPart = Parameters<typeof getToolName>[0];
-
-export function getSearchQuery(part: ToolPart): string | undefined {
+export function getSearchQuery(part: EveToolPart): string | undefined {
   return (part.input as { query?: string } | undefined)?.query;
 }
 
-export function getSources(part: ToolPart): Source[] {
+export function getSources(part: EveToolPart): Source[] {
   const output = part.output;
   if (!output) return [];
 
@@ -46,13 +43,4 @@ export function getSources(part: ToolPart): Source[] {
   }
 
   return [];
-}
-
-export function sourceToInlineMdc(url: string): string {
-  const domain = getDomain(url);
-  const favicon = getFaviconUrl(url);
-  const safeUrl = url.replace(/"/g, "&quot;");
-  const safeFavicon = favicon.replace(/"/g, "&quot;");
-
-  return ` :source-link{url="${safeUrl}" favicon="${safeFavicon}" label="${domain}"}`;
 }
