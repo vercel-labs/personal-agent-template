@@ -1,9 +1,9 @@
 import { connectSlackCredentials } from "@vercel/connect/eve";
 import {
   defaultSlackAuth,
-  loadThreadContextMessages,
   slackChannel,
   type SlackContext,
+  type SlackInboundMessageContext,
   type SlackMessage,
 } from "eve/channels/slack";
 import { buildAppSessionAuth } from "../../shared/app-auth";
@@ -13,7 +13,17 @@ import {
   parseSlackLinkCommand,
 } from "../lib/slack-internal";
 
-async function slackUserProfile(ctx: SlackContext, userId: string) {
+/**
+ * `messageContext.users` below has eve look the sender up and write the name
+ * to `message.author` before mention and DM hooks run. A followed thread reply
+ * reaches `onMessage` before that lookup, so it can be unset there; the stored
+ * link then supplies the name.
+ */
+function senderName(message: SlackMessage) {
+  return message.author?.displayName?.trim() || message.author?.fullName?.trim() || undefined;
+}
+
+async function slackLinkProfile(ctx: SlackContext, userId: string) {
   const res = await ctx.slack.request("users.info", { user: userId });
   if (!res.ok || typeof res.user !== "object" || res.user === null) return null;
 
@@ -23,16 +33,9 @@ async function slackUserProfile(ctx: SlackContext, userId: string) {
     profile?: { display_name?: string; real_name?: string; email?: string };
   };
 
-  const displayName =
-    user.profile?.display_name?.trim() ||
-    user.profile?.real_name?.trim() ||
-    user.real_name?.trim() ||
-    user.name;
-
   return {
-    userId,
     userName: user.name,
-    displayName,
+    displayName: user.profile?.display_name?.trim() || user.profile?.real_name?.trim() || user.real_name?.trim(),
     email: user.profile?.email,
   };
 }
@@ -54,13 +57,15 @@ async function tryHandleSlackLinkCommand(
     return false;
   }
 
-  const profile = await slackUserProfile(ctx, userId);
+  // Linking is the one moment the handle and email are stored, and eve's
+  // sender lookup provides neither, so ask Slack directly.
+  const profile = await slackLinkProfile(ctx, userId);
   const result = await consumeSlackLinkCodeRemote({
     code,
     slackTeamId: teamId,
     slackUserId: userId,
     slackUserName: profile?.userName ?? message.author?.userName,
-    slackDisplayName: profile?.displayName ?? message.author?.fullName,
+    slackDisplayName: senderName(message) ?? profile?.displayName,
     slackEmail: profile?.email,
   });
 
@@ -108,43 +113,33 @@ async function resolveSlackInboundAuth(
   });
 }
 
-async function buildSlackTurn(ctx: SlackContext, message: SlackMessage) {
-  if (await tryHandleSlackLinkCommand(ctx, message)) {
+async function buildSlackTurn(ctx: SlackInboundMessageContext, message: SlackMessage) {
+  // Another app's message carries a service identity, which the GitHub
+  // extension would serve with the project's own installation rather than a
+  // person's grant. Only people talk to this agent.
+  if (message.author?.isBot) {
     return null;
   }
 
-  await ctx.thread.startTyping("Thinking…");
+  // eve runs an edited message through the same hook a new one would reach.
+  // Skip the side effects for edits: an edited `link <code>` must not consume
+  // the code a second time, and an edit that joins a running turn should not
+  // reset the thread status.
+  if (ctx.edit) {
+    if (parseSlackLinkCommand(message.markdown ?? message.text ?? "")) {
+      return null;
+    }
+  }
+  else {
+    if (await tryHandleSlackLinkCommand(ctx, message)) {
+      return null;
+    }
+
+    await ctx.thread.startTyping("Thinking…");
+  }
 
   const context: string[] = [];
   const userId = message.author?.userId;
-  let profile: Awaited<ReturnType<typeof slackUserProfile>> = null;
-
-  if (userId) {
-    profile = await slackUserProfile(ctx, userId);
-    if (profile?.displayName) {
-      context.push(
-        [
-          "Slack user speaking in this thread:",
-          `- Display name: ${profile.displayName}`,
-          profile.userName ? `- Username: @${profile.userName}` : null,
-          `- User ID: ${profile.userId}`,
-          profile.email ? `- Email: ${profile.email}` : null,
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      );
-    }
-  }
-
-  const prior = await loadThreadContextMessages(ctx.thread, message, {
-    since: "last-agent-reply",
-  });
-  if (prior.length > 0) {
-    const transcript = prior
-      .map((m) => `${m.isMe ? "V" : (m.user ?? "user")}: ${m.markdown}`)
-      .join("\n");
-    context.push(`Recent thread messages since your last reply:\n\n${transcript}`);
-  }
 
   const slackAuth = defaultSlackAuth(message, ctx);
   if (!slackAuth || !userId) {
@@ -154,9 +149,8 @@ async function buildSlackTurn(ctx: SlackContext, message: SlackMessage) {
   const auth = await resolveSlackInboundAuth(slackAuth, {
     teamId: message.teamId,
     userId,
-    userName: profile?.userName ?? message.author?.userName,
-    displayName: profile?.displayName ?? message.author?.fullName,
-    email: profile?.email,
+    userName: message.author?.userName,
+    displayName: senderName(message),
   });
 
   const linked = auth.principalId !== slackAuth.principalId;
@@ -179,6 +173,14 @@ async function buildSlackTurn(ctx: SlackContext, message: SlackMessage) {
 export default slackChannel({
   credentials: connectSlackCredentials("slack/personal-agent-template"),
 
+  // eve adds each sender's name to the model's view of a message, and loads
+  // what was said in the thread since the agent's last reply. Names only:
+  // `{ users: { email: true } }` would put every participant's email in the
+  // model's context. Sender lookup needs the `users:read` scope; reinstall the
+  // Slack app after adding it.
+  messageContext: { users: true },
+  threadContext: { since: "last-agent-reply" },
+
   async onAppMention(ctx, message) {
     return buildSlackTurn(ctx, message);
   },
@@ -191,9 +193,9 @@ export default slackChannel({
   // thread the agent is already answering in keeps going without re-mentioning
   // it. Needs the `message.channels` trigger and the `channels:history` scope
   // on the connector — without them Slack never sends the event and this is
-  // simply never called.
+  // simply never called. See docs/CUSTOMIZATION.md for the full list.
   async onMessage(ctx, message) {
-    if (message.author?.isBot || !(await ctx.isSubscribed())) {
+    if (!(await ctx.isSubscribed())) {
       return null;
     }
 

@@ -62,6 +62,31 @@ const CONNECTION_ICONS: Record<string, string> = {
   slack: "i-simple-icons-slack",
 };
 
+/** eve's own rule for turning a connector UID into a sign-in name segment. */
+function signInSegment(connectorUid: string) {
+  return connectorUid.replace(/[^\w.:-]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+/**
+ * Whether a sign-in belongs to a connector. A connection's sign-in is named
+ * after the connection (`linear`). One a tool raises — the GitHub extension's
+ * per-user tokens — is named `<tool scope>__<connector UID>` instead.
+ */
+export function signInMatchesConnector(
+  signInName: string,
+  connector: { connectionName: string; connectorUid: string },
+) {
+  if (signInName === connector.connectionName) return true;
+  const segment = signInSegment(connector.connectorUid);
+  return signInName === segment || signInName.endsWith(`__${segment}`);
+}
+
+/** The provider a sign-in is for: `linear`, or `github` from `…__github_my-agent`. */
+export function signInProvider(signInName: string) {
+  const segment = signInName.split("__").at(-1) ?? signInName;
+  return segment.split(/[_/.:]/)[0] || segment;
+}
+
 export function connectionIcon(name: string) {
-  return CONNECTION_ICONS[name.toLowerCase()] ?? "i-lucide-plug";
+  return CONNECTION_ICONS[signInProvider(name).toLowerCase()] ?? "i-lucide-plug";
 }

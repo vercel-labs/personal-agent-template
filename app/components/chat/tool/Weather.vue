@@ -10,17 +10,24 @@ const isLoading = computed(
   () => props.invocation.state !== "output-available" && props.invocation.state !== "output-error",
 );
 
+// A settled call with nothing to show: it failed, or eve withheld the output.
+const isUnavailable = computed(() => {
+  const state = props.invocation.state as string;
+  return state === "output-error" || (state === "output-available" && !props.invocation.output);
+});
+
 const color = computed(() => {
   return (
     {
       "output-available":
         "bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 text-white dark:from-sky-500 dark:via-blue-600 dark:to-indigo-700",
       "output-error": "bg-muted text-error",
-    }[props.invocation.state as string] || "bg-muted text-muted"
+    }[isUnavailable.value ? "output-error" : props.invocation.state as string] || "bg-muted text-muted"
   );
 });
 
 const message = computed(() => {
+  if (isUnavailable.value) return "Can't get weather data, please try again later";
   return (
     {
       "input-available": "Loading weather data...",
@@ -36,7 +43,7 @@ const message = computed(() => {
     class="my-5 w-full max-w-md shrink-0 rounded-xl px-5 py-4"
     :class="color"
   >
-    <template v-if="invocation.state === 'output-available'">
+    <template v-if="invocation.state === 'output-available' && invocation.output">
       <div class="mb-3 flex items-start justify-between">
         <div class="flex items-baseline">
           <span class="text-4xl font-bold">{{ invocation.output.temperature }}°</span>
@@ -120,11 +127,12 @@ const message = computed(() => {
     </template>
 
     <div
-      v-else-if="isLoading"
+      v-else
       class="flex h-44 items-center justify-center"
     >
       <div class="text-center">
         <UIcon
+          v-if="isLoading"
           name="i-lucide-loader-circle"
           class="mx-auto mb-2 size-8 animate-spin"
         />

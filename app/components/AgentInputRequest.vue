@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import type { EveDynamicToolPart } from "eve/vue";
+import type { Interaction } from "eve/vue";
+import type { Answer } from "eve/events";
 
-export type AgentInputResponse = {
-  optionId?: string;
-  requestId: string;
-  text?: string;
-};
+export type AgentInputResponse = Answer;
 
 const props = defineProps<{
   canRespond: boolean;
-  part: EveDynamicToolPart;
+  /** An approval or question, attached to a tool call or standing alone. */
+  interaction: Interaction;
   compact?: boolean;
 }>();
 
@@ -17,16 +15,33 @@ const emit = defineEmits<{
   inputResponses: [responses: AgentInputResponse[]];
 }>();
 
-const inputRequest = computed(() => props.part.toolMetadata?.eve?.inputRequest);
-const inputResponse = computed(() => props.part.toolMetadata?.eve?.inputResponse);
+const inputRequest = computed(() => props.interaction.request);
+// Present once an answer is submitted, before eve settles the interaction.
+const inputResponse = computed(() => props.interaction.answer);
 
-const hidePrompt = computed(() => !props.compact && props.part.toolName === "ask_question");
+/** How an interaction closed when nobody answered it. */
+const closedLabel = computed(() => {
+  if (props.interaction.status !== "settled" || inputResponse.value) {
+    return undefined;
+  }
 
-const showOptions = computed(() => (inputRequest.value?.options?.length ?? 0) > 0);
+  switch (props.interaction.outcome) {
+    case "accepted":
+      return "Accepted";
+    case "declined":
+      return "Declined";
+    case "expired":
+      return "Expired";
+    default:
+      return "No longer needed";
+  }
+});
+
+const showOptions = computed(() => (inputRequest.value.options?.length ?? 0) > 0);
 
 const showFreeform = computed(() => {
   const request = inputRequest.value;
-  if (!request || inputResponse.value) {
+  if (inputResponse.value || closedLabel.value) {
     return false;
   }
   return request.allowFreeform === true
@@ -43,7 +58,7 @@ const canSubmitFreeform = computed(
 const selectedOption = computed(() => {
   const request = inputRequest.value;
   const response = inputResponse.value;
-  if (!request?.options || !response?.optionId) {
+  if (!request.options || !response?.optionId) {
     return undefined;
   }
   return request.options.find(option => option.id === response.optionId);
@@ -53,17 +68,16 @@ const responseLabel = computed(
   () => selectedOption.value?.label ?? inputResponse.value?.text ?? inputResponse.value?.optionId,
 );
 
-function respond(optionId: string, requestId: string) {
-  emit("inputResponses", [{ optionId, requestId }]);
+function respond(optionId: string) {
+  emit("inputResponses", [{ interactionId: props.interaction.interactionId, optionId }]);
 }
 
 function respondText() {
-  const request = inputRequest.value;
   const text = freeformText.value.trim();
-  if (!request || !text) {
+  if (!text) {
     return;
   }
-  emit("inputResponses", [{ requestId: request.requestId, text }]);
+  emit("inputResponses", [{ interactionId: props.interaction.interactionId, text }]);
 }
 
 function onFreeformKeydown(event: KeyboardEvent) {
@@ -78,15 +92,11 @@ function onFreeformKeydown(event: KeyboardEvent) {
 
 <template>
   <div
-    v-if="inputRequest"
     :class="compact
       ? 'mt-2 max-w-lg space-y-2'
       : 'space-y-3 rounded-lg border border-default/60 bg-elevated/40 p-3'"
   >
-    <p
-      v-if="!hidePrompt"
-      :class="compact ? 'text-sm text-muted' : 'text-sm text-muted'"
-    >
+    <p class="text-sm text-muted">
       {{ inputRequest.prompt }}
     </p>
 
@@ -97,6 +107,13 @@ function onFreeformKeydown(event: KeyboardEvent) {
       <span class="text-dimmed">Answered</span>
       <span class="mx-1.5 text-dimmed">·</span>
       <span class="text-highlighted">{{ responseLabel }}</span>
+    </p>
+
+    <p
+      v-else-if="closedLabel"
+      class="text-sm text-dimmed"
+    >
+      {{ closedLabel }}
     </p>
 
     <template v-else>
@@ -111,7 +128,7 @@ function onFreeformKeydown(event: KeyboardEvent) {
           :variant="compact ? 'soft' : 'solid'"
           :disabled="!canRespond"
           size="xs"
-          @click="respond(option.id, inputRequest.requestId)"
+          @click="respond(option.id)"
         >
           {{ option.label }}
         </UButton>

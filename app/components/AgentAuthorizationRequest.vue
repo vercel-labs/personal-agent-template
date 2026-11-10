@@ -6,7 +6,8 @@ const props = defineProps<{
 }>();
 
 const label = computed(() => {
-  const name = props.challenge.name;
+  if (props.challenge.displayName) return props.challenge.displayName;
+  const name = signInProvider(props.challenge.name);
   return name.charAt(0).toUpperCase() + name.slice(1);
 });
 

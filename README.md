@@ -16,7 +16,7 @@ Open source personal agent template. Web chat, Slack, GitHub, Linear, and persis
 
 ### Web Chat — Threads That Persist
 
-Chat with your agent in the browser. Threads resume across sessions and tool calls render in real time. Eve holds the transcript, so the app stores a session id and nothing else.
+Chat with your agent in the browser. Threads resume across sessions and tool calls render in real time. Eve holds the transcript, so the app stores a session id and nothing else — [`agent/agent.ts`](agent/agent.ts) sets `experimental.workflow.retention` so that transcript outlives the session.
 
 ### Slack — Same Agent, Different Surface
 
@@ -32,7 +32,11 @@ Connect Linear via Vercel Connect MCP. Ask about issues, projects, and cycles �
 
 ### Persistent Memory — Eve's Memory Slot
 
-A bounded, model-maintained list of durable facts, scoped per user by Eve's [`fileMemory()`](https://eve.dev/docs/memory) provider. Recalled before every turn and after compaction; the agent saves and removes entries as the conversation warrants.
+A bounded, model-maintained list of durable facts, scoped per user by Eve's [`fileMemory()`](https://eve.dev/docs/memory) provider. Recalled before every turn, outside the conversation history, so it survives compaction; the agent saves and removes entries as the conversation warrants.
+
+### Persistent Workspace — Optional
+
+Off by default. Set `AGENT_DRIVE_ENABLED=1` to mount a per-user [Vercel Sandbox Drive](https://vercel.com/docs/sandbox/concepts/drives) at `/data`, so files the agent writes in the web chat outlive the conversation. See [Customization](docs/CUSTOMIZATION.md#7-persistent-workspace-optional).
 
 ### Daily Summary — On Demand
 
@@ -110,7 +114,7 @@ Personal Agent Template ships with **V** as the example persona. See the [Custom
 
 ## Memory
 
-The `profile` slot ([`agent/memory/profile.ts`](agent/memory/profile.ts)) binds Eve's `fileMemory()` provider to one document per authenticated principal. Eve recalls it before every turn and after compaction, and gives the agent `profile__save_memory` and `profile__remove_memory` to maintain it.
+The `profile` slot ([`agent/memory/profile.ts`](agent/memory/profile.ts)) binds Eve's `fileMemory()` provider to one document per authenticated principal. Eve recalls it before every turn, outside the conversation history, and gives the agent `profile__save_memory` and `profile__remove_memory` to maintain it.
 
 Documents live in private Vercel Blob storage — attach a Blob store to the project before deploying.
 

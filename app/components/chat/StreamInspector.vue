@@ -11,11 +11,11 @@ const isDev = import.meta.dev;
 const { streamLog, turnEventCounts } = useStreamLog();
 
 const counts = computed(() => [
-  { key: "message.appended", label: "msg", value: turnEventCounts.value["message.appended"] ?? 0 },
-  { key: "reasoning.appended", label: "reason", value: turnEventCounts.value["reasoning.appended"] ?? 0 },
-  { key: "actions.requested", label: "tool", value: turnEventCounts.value["actions.requested"] ?? 0 },
-  { key: "action.result", label: "result", value: turnEventCounts.value["action.result"] ?? 0 },
-]);
+  { key: "content.completed:text", label: "msg" },
+  { key: "content.completed:reasoning", label: "reason" },
+  { key: "call.requested", label: "tool" },
+  { key: "call.settled", label: "result" },
+].map(item => ({ ...item, value: turnEventCounts.value[item.key] ?? 0 })));
 
 const statusColor = computed(() => {
   if (props.status === "streaming" || props.status === "submitted") return "text-warning";

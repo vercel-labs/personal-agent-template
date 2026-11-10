@@ -35,8 +35,9 @@ export default photonIMessageChannel({
     const link = phoneNumber ? await fetchPhoneLink(phoneNumber) : undefined;
 
     if (!link) {
-      // Without a profile the caller has no Connect grant, so every integration
-      // tool would fail. Answer as a stranger and say how to be recognised.
+      // Without a profile the caller has no memory and none of the grants made
+      // in Settings; anything they signed in to here would belong to this
+      // number, not a profile. Answer as a stranger and say how to be recognised.
       return {
         auth: defaultPhotonAuth(message),
         title: TITLE,

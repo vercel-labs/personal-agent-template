@@ -104,10 +104,36 @@ Uses Vercel Connect OAuth and the [@github-tools/eve-extension](https://github-t
 
 The mount filename is the namespace, so tools reach the model as `github__listPullRequests`, `github__createIssue`, and so on. Narrow the catalog with `preset`, `include` and `exclude`, and set per-tool approval with `requireApproval`.
 
-`connect.subject` resolves per caller, so each user reaches GitHub through their
-own Connect grant. Leave it out and the extension mints `{ type: "app" }` — the
-project's own installation — which every signed-in user would share whether or
-not they connected an account.
+`actAs: "caller"` runs each call with the GitHub token of the person driving
+the turn, so the agent can do what that user can do and nothing more. Someone
+who has not connected GitHub gets a sign-in prompt in the conversation — in the
+web chat, Slack or iMessage — and connecting from **Settings → Integrations**
+works too. For signed-in users and linked Slack or iMessage accounts both use
+the same Connect grant. An unlinked Slack or iMessage sender is a separate
+identity: a sign-in they complete in the thread is tied to that identity, does
+not show in Settings, and is not carried over when they link. Only a turn no
+user drives (a schedule, a service caller) falls back to the project's GitHub
+App installation; the Slack channel drops messages from other apps so a bot
+cannot reach it. Use `actAs: "user"` to refuse those turns instead, or
+`{ read, write }` and `overrides.<tool>.actAs` to choose per tool.
+
+User tokens carry the connector's full grant, so Settings requests the same
+(`scopes: []` in [`server/connectors.ts`](../server/connectors.ts)). What a
+tool can do is then bounded by the GitHub App behind the connector. The
+`maintainer` preset (`GITHUB_PRESET`) includes tools that need these
+permissions; without them those tools fail. The App-installation fallback
+requests every scope in the preset explicitly
+(`connectGithubScopesForPreset("maintainer")` lists them) and can be refused a
+token outright if the App lacks one:
+
+| Permission | Access |
+|------------|--------|
+| Commit statuses | Read and write |
+| Code scanning alerts | Read |
+| Dependabot alerts | Read |
+| Secret scanning alerts | Read |
+
+To avoid widening the App, drop the tools instead with `exclude` on the mount.
 
 1. Create a GitHub connector in Vercel Connect:
 
@@ -116,9 +142,10 @@ not they connected an account.
    vercel connect attach github/personal-agent
    ```
 
-2. Update `GITHUB_CONNECTOR` in [`shared/connect.ts`](../shared/connect.ts) if it differs from `vercel connect list`
-3. Open **Settings → Integrations** and connect
-4. Ask about repos, PRs, or issues in chat
+2. Grant the GitHub App the permissions listed above
+3. Update `GITHUB_CONNECTOR` in [`shared/connect.ts`](../shared/connect.ts) if it differs from `vercel connect list`
+4. Open **Settings → Integrations** and connect
+5. Ask about repos, PRs, or issues in chat
 
 ### Linear
 
@@ -142,12 +169,26 @@ credentials: connectSlackCredentials("slack/your-slug"),
 
 Slack linking uses the internal API — `INTERNAL_API_SECRET` must be set.
 
-Follow-ups in a thread the agent is already answering do not need another
-mention. That relies on Slack sending plain message events: open **Advanced**
-on the connector and add the `message.channels` trigger event and the
-`channels:history` bot scope (`message.groups` and `groups:history` for private
-channels). Without them nothing breaks — Slack simply never sends the event, and
-mentions keep working. Inbound file attachments additionally need `files:read`.
+The channel relies on a few Slack scopes and events beyond the connector's
+defaults. Open **Advanced** on the connector, add what you need, then
+**reinstall the Slack app** — Slack only grants new scopes on install:
+
+| Feature | Bot scopes | Trigger events |
+|---------|-----------|----------------|
+| Sender names in the agent's context (`messageContext.users`) | `users:read` | — |
+| Email stored when an account is linked | `users:read.email` | — |
+| Follow-ups without a mention in a thread the agent is answering | `channels:history` (`groups:history` for private channels) | `message.channels` (`message.groups`) |
+| Group DMs, and edits to messages in them | `mpim:history` | `message.mpim` |
+| Inbound file attachments | `files:read` | — |
+| Long replies uploaded as a snippet | `files:write` | — |
+
+Nothing breaks without them: Slack simply never sends an event the app is not
+subscribed to, and a sender lookup that fails is left out. Mentions and DMs
+keep working.
+
+An edited message goes through the same hook a new one would, so the agent
+sees corrections; an edited `link <code>` is ignored. Earlier replies in a
+thread are loaded by eve (`threadContext`), each attributed to its sender.
 
 ### iMessage (Photon)
 
@@ -159,13 +200,67 @@ Inbound senders are recognised by the E.164 number they set on **Profile**,
 stored in `phone_links`. A number nobody claimed still gets an answer, without
 the caller's memory or integrations.
 
-## 7. Theme the UI
+## 7. Persistent workspace (optional)
+
+Off by default. Each conversation gets its own sandbox for the agent's file
+and shell tools, and what it writes there is gone when the conversation ends.
+Turning this on gives every user a [Vercel Sandbox Drive](https://vercel.com/docs/sandbox/concepts/drives)
+mounted at `/data`, so files survive across conversations: notes, downloads,
+cloned repositories, generated reports. Memory stays what it is — short facts
+recalled every turn; the Drive holds files the agent opens when it needs them.
+
+Code: [`agent/sandbox.ts`](../agent/sandbox.ts) (the mount),
+[`agent/lib/drive.ts`](../agent/lib/drive.ts) (the switches), and a
+`# Workspace` section [`agent/instructions.ts`](../agent/instructions.ts) adds
+when the feature is on — the model does not know `/data` exists unless told.
+
+To turn it on:
+
+1. Set `AGENT_DRIVE_ENABLED=1` on the Vercel project, for builds and for both
+   services. Optionally set `AGENT_DRIVE_REGION` (default `iad1`) — choose it
+   first, because a Drive's region cannot change after it is created.
+2. Redeploy. The flag is read when the agent is built and again when it runs,
+   and the two must agree.
+
+What to know before you do:
+
+- **Vercel only.** Drives mount only into Vercel Sandboxes, so the flag also
+  pins the sandbox provider. A local build or `eve dev` with the flag on needs
+  the project linked (`vercel link`, `vercel env pull`); leave it unset locally
+  to keep using Docker or just-bash, without `/data`.
+- **Web chat only.** The Drive is chosen when a conversation's sandbox is
+  created, from whoever started it, and the agent reads `/data` for anyone it
+  answers. A Slack thread or group chat can be joined by other people, so
+  conversations started there get no Drive. Widen `driveOwner()` in
+  `agent/sandbox.ts` only if you are sure a channel is one person. A web
+  thread is tied to its owner by this app, which only hands a thread's session
+  id to the user who owns it.
+- **One conversation at a time.** A Drive takes a single read-write mount. If
+  a user has two conversations running, the second opens without `/data` and
+  stays that way; the agent is told to say so rather than save elsewhere. The
+  Drive frees up when the first conversation's sandbox stops.
+- **Check the logs after enabling it.** Any failure to create or mount the
+  Drive — a busy Drive, but also missing credentials, a region mismatch or a
+  quota — falls back to a sandbox without `/data` and logs
+  `[sandbox] workspace Drive unavailable`. If `/data` never appears, that line
+  says why.
+- **Slower first tool call.** eve runs its base setup on every sandbox that
+  has a Drive mount.
+- **Nothing deletes a Drive.** It outlives the conversation, the session and
+  the user account, and is billed for the storage used. Names are
+  `workspace-<hash>` (see `driveName()`); delete a user's Drive when you delete
+  their account, after their sandboxes have stopped.
+- **The contents are untrusted input.** A file the agent saved from the web
+  can carry instructions aimed at the model. The instructions tell it to treat
+  `/data` as data; consider a `networkPolicy` on `open()` if that matters.
+
+## 8. Theme the UI
 
 - Global styles: [`app/assets/css/main.css`](../app/assets/css/main.css)
 - Nuxt UI config: [`app/app.config.ts`](../app/app.config.ts)
 - Layout and navigation: [`app/layouts/default.vue`](../app/layouts/default.vue), [`app/components/Navbar.vue`](../app/components/Navbar.vue)
 
-## 8. Deploy your fork
+## 9. Deploy your fork
 
 See [Deploy on Vercel](../README.md#deploy-on-vercel) in the README. Remember:
 

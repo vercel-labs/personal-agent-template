@@ -102,6 +102,16 @@ Eve's `fileMemory()` provider stores one private Blob document per user at
 `BLOB_READ_WRITE_TOKEN` is provided automatically; without one the agent fails
 on its first memory recall.
 
+## Persistent workspace (optional)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `AGENT_DRIVE_ENABLED` | unset | Set to `1` to mount a per-user Vercel Sandbox Drive at `/data`. Must be set for the build and at runtime. |
+| `AGENT_DRIVE_REGION` | `iad1` | Region for the Drives and the sandboxes that mount them. Cannot change once Drives exist. |
+
+See [Customization](./CUSTOMIZATION.md#7-persistent-workspace-optional) for
+what it does and its limits.
+
 ## AI provider
 
 This template does not define AI keys in `.env.example`. The default model is set in [`agent/agent.ts`](../agent/agent.ts):
@@ -124,7 +134,7 @@ See [Customization](./CUSTOMIZATION.md#integrations) for setup steps.
 
 ## GitHub (optional)
 
-GitHub tools use per-user OAuth via Vercel Connect. Connect in **Settings → Integrations**, then start a new chat session so GitHub tools load at `session.started`.
+GitHub tools use per-user OAuth via Vercel Connect. Connect in **Settings → Integrations**, and the tools are available from the next message — the extension resolves them before every model call, so no new chat is needed.
 
 ## Local-only files
 

@@ -47,6 +47,14 @@ watch(status, (value) => {
   }
 });
 
+// Replay rebuilds pending sign-ins after mount; check each as it appears, in
+// case the connector was connected from Settings in the meantime.
+watch(() => pendingChallenges.value.length, (count, previous) => {
+  if (import.meta.client && count > (previous ?? 0)) {
+    void tryResumeConnectedChallenges({ skipIfBusy: isBusy.value });
+  }
+});
+
 onMounted(() => {
   void refreshThreadList();
   void tryResumeConnectedChallenges({ skipIfBusy: isBusy.value });
