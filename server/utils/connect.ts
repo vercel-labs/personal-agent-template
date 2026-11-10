@@ -159,7 +159,15 @@ export function isValidEveResumeUrl(url: string, origin: string) {
       return false;
     }
 
-    return /^\/eve\/v1\/connections\/[^/]+\/callback\/[^/]+$/.test(parsed.pathname);
+    // The caller forwards the string it was given, so accept only the exact
+    // form eve mints: no userinfo, query or fragment, nothing the URL parser
+    // had to normalize (`..`, backslashes). eve builds it with `URL#toString`.
+    if (url !== `${parsed.origin}${parsed.pathname}`) {
+      return false;
+    }
+
+    // eve's `/eve/v1/connections/:name/callback/:attemptId/:token`.
+    return /^\/eve\/v1\/connections\/[^/]+\/callback\/[^/]+\/[^/]+$/.test(parsed.pathname);
   }
   catch {
     return false;

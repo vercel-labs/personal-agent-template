@@ -1,6 +1,5 @@
 import type { ConnectorDef } from "#shared/types/connector";
-import { connectGithubScopesForPreset } from "@github-tools/sdk/connect";
-import { GITHUB_CONNECTOR, GITHUB_PRESET } from "#shared/connect";
+import { GITHUB_CONNECTOR } from "#shared/connect";
 import { fetchLinearIssuesViaMcp } from "~~/server/utils/linear-mcp";
 
 export const connectors: ConnectorDef[] = [
@@ -11,7 +10,10 @@ export const connectors: ConnectorDef[] = [
     connector: GITHUB_CONNECTOR,
     connectionName: "github",
     icon: "i-simple-icons-github",
-    scopes: connectGithubScopesForPreset(GITHUB_PRESET),
+    // Empty means the connector's full grant — what the agent's `actAs` user
+    // tokens request too. Narrowing this would make Settings and the agent
+    // ask for different grants.
+    scopes: [],
     test: {
       label: "List reachable repositories",
       run: async (token) => {

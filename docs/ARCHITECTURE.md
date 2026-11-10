@@ -52,13 +52,14 @@ The `eve/nuxt` module generates the Vercel service and its `/eve/v1/*` route at 
 personal-agent-template/
 ├── agent/                    # Eve agent
 │   ├── agent.ts              # Model and agent config
+│   ├── sandbox.ts            # Sandbox selector; optional per-user Drive at /data
 │   ├── channels/             # eve (web), slack, photon (iMessage)
-│   ├── tools/                # weather
+│   ├── tools/                # weather, ask_question
 │   ├── extensions/           # mounted eve extensions (github)
 │   ├── memory/               # memory slots (profile)
 │   ├── skills/               # e.g. daily-summary.md
 │   ├── connections/          # Linear MCP
-│   ├── lib/                  # profile-internal, slack-internal, phone-internal, internal-api
+│   ├── lib/                  # profile-internal, slack-internal, phone-internal, internal-api, drive
 │   └── instructions.ts       # system instructions
 ├── app/                      # Nuxt frontend
 │   ├── pages/                # chat, settings, login
@@ -87,7 +88,7 @@ personal-agent-template/
 
 1. Eve resolves the `profile` slot's scope to the authenticated principal ([`agent/memory/profile.ts`](../agent/memory/profile.ts))
 2. `fileMemory()` reads that principal's document from private Vercel Blob storage
-3. The indexed entries are recalled on `turn.started` and again after compaction
+3. The indexed entries are recalled before each turn and supplied outside the conversation history, so compaction does not drop them
 
 Records arrive as untrusted user-role messages, never as system instructions.
 The agent maintains them with `profile__save_memory` and `profile__remove_memory`.
@@ -159,4 +160,4 @@ Global middleware: [`app/middleware/auth.global.ts`](../app/middleware/auth.glob
 
 ## Eve docs
 
-For channels, tools, connections, and deployment details, read Eve guides in `node_modules/eve/dist/docs/public/`.
+For channels, tools, connections, and deployment details, read Eve guides in `node_modules/eve/docs/` — start with `README.md`, which maps each task to its page.

@@ -16,7 +16,8 @@ export function getMergedParts(parts: UIMessage["parts"]): UIMessage["parts"] {
       continue;
     }
     if (isTextUIPart(part) && prev && isTextUIPart(prev)) {
-      result[result.length - 1] = { type: "text", text: prev.text + part.text };
+      // Keep the later part's `state` so a streaming tail still streams.
+      result[result.length - 1] = { ...part, text: prev.text + part.text };
     } else {
       result.push(part);
     }

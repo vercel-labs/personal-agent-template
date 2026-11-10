@@ -1,14 +1,19 @@
-import type { EveMessageData, UseEveAgentOptions } from "eve/vue";
+import type { SessionStreamEvent } from "eve/client";
 
-type StreamEvent = Parameters<NonNullable<UseEveAgentOptions<EveMessageData>["onEvent"]>>[0];
-type FailureEvent = Extract<StreamEvent, { type: "turn.failed" | "session.failed" }>;
+type SettledEvent = Extract<SessionStreamEvent, { type: "turn.settled" | "session.ended" }>;
 
 const errorsByChatId = ref<Record<string, string>>({});
 
-function messageFor(event: FailureEvent): string {
-  const detail = event.data.message?.trim();
+/** A turn or session that ended in failure, as opposed to completing or being cancelled. */
+export function isFailureEvent(event: SessionStreamEvent): event is SettledEvent {
+  return (event.type === "turn.settled" || event.type === "session.ended")
+    && event.data.outcome === "failed";
+}
 
-  if (event.type === "session.failed") {
+function messageFor(event: SettledEvent): string {
+  const detail = event.data.error?.message?.trim();
+
+  if (event.type === "session.ended") {
     return detail
       ? `This conversation could not recover: ${detail}`
       : "This conversation could not recover. Send a new message to start again.";
@@ -23,7 +28,7 @@ function messageFor(event: FailureEvent): string {
  * A failed turn leaves an assistant message with no visible parts, so without
  * this the stream simply goes quiet and the chat shows nothing at all.
  */
-export function recordTurnFailure(chatId: string, event: FailureEvent) {
+export function recordTurnFailure(chatId: string, event: SettledEvent) {
   errorsByChatId.value = { ...errorsByChatId.value, [chatId]: messageFor(event) };
 }
 
