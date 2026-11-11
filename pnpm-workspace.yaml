@@ -8,6 +8,9 @@ minimumReleaseAgeExclude:
   - "@github-tools/sdk"
   - '@vercel/cli-config@0.3.8'
   - '@vercel/oidc@4.0.8'
+  - '@comark/nuxt@0.9.1'
+  - '@comark/vue@0.9.1'
+  - comark@0.9.1
 
 # pnpm 10+ requires each build script to be allowed explicitly.
 allowBuilds:
