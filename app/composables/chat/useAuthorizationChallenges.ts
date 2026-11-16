@@ -171,9 +171,10 @@ export function useAuthorizationChallenges() {
       return;
     }
 
-    let connectors: Array<ConnectorRef & { status: { state: string } }>;
+    type ConnectorWithStatus = ConnectorRef & { status: { state: string } };
+    let connectors: ConnectorWithStatus[];
     try {
-      connectors = await $fetch("/api/connectors");
+      connectors = await $fetch<ConnectorWithStatus[]>("/api/connectors");
     }
     catch {
       return;
